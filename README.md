@@ -1,10 +1,10 @@
-# churn_watch
+# WTTE-RNN
 A hackless machine-learning framework for churn- and time to event prediction. Forecasting problems as diverse as server monitoring to earthquake- and churn-prediction can be posed as the problem of predicting the time to an event. **churn_watch** is a data-science philosophy on how this should be done. The core technology is the WTTE-RNN algorithm ([blog post](https://ragulpr.github.io/2016/12/22/WTTE-RNN-Hackless-churn-modeling/), [master thesis](https://ragulpr.github.io/assets/draft_master_thesis_martinsson_egil_wtte_rnn_2016.pdf))
 
 <blockquote class="imgur-embed-pub" lang="en" data-id="0oVdKiv"><a href="//imgur.com/0oVdKiv"></a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>
 
 # ROADMAP
-churn_watch is an opinionated idea about how churn-monitoring and reporting can be made beautiful and easy. The goal is to create a forkable and easily deployable model framework.
+The goal is to create a forkable and easily deployable model framework. WTTE-RNN is the algorithm, churn_watch is the deployment - an opinionated idea about how churn-monitoring and reporting can be made beautiful and easy. 
 
 ## Implementations of the objective functions
 The core technology is the objective functions. These can be used with any machine-learning algorithm. To spread the word we should implement and commit them to various ML-projects. 
@@ -27,7 +27,7 @@ To use the model one needs basic tte-transforms of raw data. To consume the mode
   - weibull hazard, chf, cdf, pdf, quantile, expected value etc (Python done). 
 
 ## Monitoring 
-The WTTE-RNN is as much an ML-algorithm as a visual language to talk about this shape of data and our predictions. 
+The WTTE-RNN is as much an ML-algorithm as a visual language to talk about this shape of data and our predictions.
 * Plots (partly done)
 * Shiny webapp or/and similar (partly done elsewhere)
 * Integration. Slack/E-mail bots & summaries
