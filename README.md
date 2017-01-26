@@ -45,4 +45,14 @@ To get this going we need at least one off-the-shelf deep-learning implementatio
 
 # Licensing
 * MIT-license. 
-* Contributors should be encouraged to spread the word and help others implement the model.
+
+# Citation
+
+@MastersThesis{martinsson:Thesis:2016,
+    author     =     {Egil Martinsson},
+    title     =     {WTTE-RNN : Weibull Time To Event Recurrent Neural Network},
+    school     =     {Chalmers University Of Technology},
+    year     =     {2016},
+    }
+
+Reach out to egil.martinsson[at]gmail.com if you have any questions!
