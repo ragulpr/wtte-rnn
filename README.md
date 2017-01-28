@@ -30,8 +30,6 @@ A neat sideresult is that the predicted params is a 2-d embedding that can be us
 
 ![WTTE-RNN alphabeta.png](alphabeta.png)
 
-(last 2 pics is from stepwise prediction of failing jet-engines)
-
 # Warnings
 There's alot of mathematical theory basically justifying us to use a nice loss function in certain situations:
 
