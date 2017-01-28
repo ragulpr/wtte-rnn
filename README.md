@@ -26,7 +26,7 @@ What we get is a pretty neat prediction about the *distribution of the tte* in e
 
 ![WTTE-RNN prediction](it_61786_pmf_151.png)
 
-A neat sideresult is that the predicted params is a 2-d embedding that can be used to visualize predictions about *how soon* (alpha, left) and *how sure* (beta, right):
+A neat sideresult is that the predicted params is a 2-d embedding that can be used to visualize and group predictions about *how soon* (alpha) and *how sure* (beta). Here by stacking timelines of predicted alpha (left) and beta (right):
 
 ![WTTE-RNN alphabeta.png](alphabeta.png)
 
@@ -36,19 +36,17 @@ A neat sideresult is that the predicted params is a 2-d embedding that can be us
 There's alot of mathematical theory basically justifying us to use a nice loss function in certain situations:
 
 $$
-\begin{equation*}
 \text{loss} = 
 	\begin{cases}
 	 -\log\left[Pr(Y=y  		 |\alpha,\beta)\right]   & \mbox{if uncensored}\\
 	 -\log\left[Pr(Y> \tilde{y} |\alpha,\beta)\right]   & \mbox{if right censored }  \\
 	\end{cases}
-\end{equation*}
 $$
 
 So for censored data it only rewards *predicting further away*. To get this to work you need the censoring time to be independent from your feature data. If your features contains information about the point of censoring your algorithm will learn to cheat by predicting far away based on probability of censoring instead of tte. A type of overfitting/artifact learning. Global features can have this effect if not properly treated.
 
 # ROADMAP
-The project is on the TODO-state. The goal is to create a forkable and easily deployable model framework. WTTE-RNN is the algorithm, churn_watch is the deployment - an opinionated idea about how churn-monitoring and reporting can be made beautiful and easy. 
+The project is on the TODO-state. The goal is to create a forkable and easily deployable model framework. WTTE-RNN is the algorithm, churn_watch is the deployment - an opinionated idea about how churn-monitoring and reporting can be made beautiful and easy. Pull-requests, recommendations, comments and contributions very welcome.
 
 ## Implementations of the objective functions
 The core technology is the objective functions. These can be used with any machine-learning algorithm. To spread the word we should implement and commit them to various ML-projects. 
