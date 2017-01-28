@@ -33,13 +33,8 @@ A neat sideresult is that the predicted params is a 2-d embedding that can be us
 # Warnings
 There's alot of mathematical theory basically justifying us to use a nice loss function in certain situations:
 
-$$
-\text{loss} = 
-	\begin{cases}
-	 -\log\left[Pr(Y=y  		 |\alpha,\beta)\right]   & \mbox{if uncensored}\\
-	 -\log\left[Pr(Y> \tilde{y} |\alpha,\beta)\right]   & \mbox{if right censored }  \\
-	\end{cases}
-$$
+![loss-equation](equation.png)
+
 
 So for censored data it only rewards *predicting further away*. To get this to work you need the censoring time to be independent from your feature data. If your features contains information about the point of censoring your algorithm will learn to cheat by predicting far away based on probability of censoring instead of tte. A type of overfitting/artifact learning. Global features can have this effect if not properly treated.
 
