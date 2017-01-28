@@ -8,21 +8,21 @@ A less hacky machine-learning framework for churn- and time to event prediction.
 * Quick visual intro to the [model](https://imgur.com/a/HX4KQ) 
 
 ## Why it's cool
-We assume data of many time-series of events were we want to use historic data to predict the time to the next event (TTE). If we haven't observed the last event yet we only have the minimum of the tte to train on. This is called *censored data* (in red):
+The data consists of many time-series of events were you want to use historic data to predict the time to the next event (TTE). If you haven't observed the last event yet there's only the minimum of the TTE to train on. This is called *censored data* (in red):
 
 ![Censored data](data.gif)
 
-Instead of predicting the tte itself the trick is to let your machine learning model output the *parameters of a distribution*. This could be any machine learning model but we like RNNs:
+Instead of predicting the TTE itself the trick is to let your machine learning model output the *parameters of a distribution*. This could be anything but we like the *Weibull distribution* because it's [awesome](https://ragulpr.github.io/2016/12/22/WTTE-RNN-Hackless-churn-modeling/#embrace-the-weibull-euphoria). The machine learning algorithm could be anything gradient-based but we like RNNs because they are [awesome](http://karpathy.github.io/2015/05/21/rnn-effectiveness/) too.
 
 ![example WTTE-RNN architecture](fig_rnn_weibull.png)
 
-One could use any distribution but we like the *Weibull distribution* because it's [awesome](https://ragulpr.github.io/2016/12/22/WTTE-RNN-Hackless-churn-modeling/#embrace-the-weibull-euphoria) but I hope to see many extensions. We train the algos with a special log-loss for censored data. 
+Hopefully there'll be lot's of extensions. We train the algos with a special log-loss for censored data. 
 
 In essence, we want to assign high probability at the *next* event or low probability where there *wasn't* any events (censored data): 
 
 ![WTTE-RNN prediction over a timeline](solution_beta_2.gif)
 
-What we get is a pretty neat prediction about the *distribution of the tte* in each step (here for a single event):
+What we get is a pretty neat prediction about the *distribution of the TTE* in each step (here for a single event):
 
 ![WTTE-RNN prediction](it_61786_pmf_151.png)
 
