@@ -22,9 +22,15 @@ In essence, we want to assign high probability at the *next* event and low proba
 
 ![WTTE-RNN prediction over a timeline](solution_beta_2.gif)
 
-What we get is a pretty neat prediction about the *distribution of the tte* in each step. A neat sideresult is a 2-d embedding that can be used to visualize *when* (alpha) and *how sure we are* (beta):
+What we get is a pretty neat prediction about the *distribution of the tte* in each step (here for a single event):
+
+![WTTE-RNN prediction](it_61786_pmf_151.png)
+
+A neat sideresult is that the predicted params is a 2-d embedding that can be used to visualize predictions about *how soon* (alpha, left) and *how sure* (beta, right):
 
 ![WTTE-RNN alphabeta.png](alphabeta.png)
+
+(last 2 pics is from stepwise prediction of failing jet-engines)
 
 # ROADMAP
 The project is on the TODO-state. The goal is to create a forkable and easily deployable model framework. WTTE-RNN is the algorithm, churn_watch is the deployment - an opinionated idea about how churn-monitoring and reporting can be made beautiful and easy. 
