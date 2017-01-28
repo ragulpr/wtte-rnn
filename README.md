@@ -3,7 +3,7 @@ Weibull Time to Event Reccurent Neural Network
 
 A less hacky machine-learning framework for churn- and time to event prediction. Forecasting problems as diverse as server monitoring to earthquake- and churn-prediction can be posed as the problem of predicting the time to an event. WTTE-RNN is an algorithm and a philosophy about how this should be done. 
 
-* [blog post](https://ragulpr.github.io/2016/12/22/WTTE-RNN-Hackless-churn-modeling/) 
+* [blog post](https://ragulpr.github.io/2016/12/22/WTTE-RNN-Hackless-churn-modeling/)
 * [master thesis](https://ragulpr.github.io/assets/draft_master_thesis_martinsson_egil_wtte_rnn_2016.pdf)
 * Quick visual intro to the [model](https://imgur.com/a/HX4KQ) 
 
@@ -31,6 +31,21 @@ A neat sideresult is that the predicted params is a 2-d embedding that can be us
 ![WTTE-RNN alphabeta.png](alphabeta.png)
 
 (last 2 pics is from stepwise prediction of failing jet-engines)
+
+# Warnings
+There's alot of mathematical theory basically justifying us to use a nice loss function in certain situations:
+
+$$
+\begin{equation*}
+\text{loss} = 
+	\begin{cases}
+	 -\log\left[Pr(Y=y  		 |\alpha,\beta)\right]   & \mbox{if uncensored}\\
+	 -\log\left[Pr(Y> \tilde{y} |\alpha,\beta)\right]   & \mbox{if right censored }  \\
+	\end{cases}
+\end{equation*}
+$$
+
+So for censored data it only rewards *predicting further away*. To get this to work you need the censoring time to be independent from your feature data. If your features contains information about the point of censoring your algorithm will learn to cheat by predicting far away based on probability of censoring instead of tte. A type of overfitting/artifact learning. Global features can have this effect if not properly treated.
 
 # ROADMAP
 The project is on the TODO-state. The goal is to create a forkable and easily deployable model framework. WTTE-RNN is the algorithm, churn_watch is the deployment - an opinionated idea about how churn-monitoring and reporting can be made beautiful and easy. 
