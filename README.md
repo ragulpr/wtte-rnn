@@ -9,17 +9,21 @@ A less hacky machine-learning framework for churn- and time to event prediction.
 
 ## Why it's cool
 We assume data of many time-series of events were we want to use historic data to predict the time to the next event (TTE). If we haven't observed the last event yet we only have the minimum of the tte to train on. This is called *censored data* (in red):
+
 ![Censored data](data.gif)
 
-Instead of predicting the tte itself the trick is to let your machine learning model output the *parameters of a distribution*. 
+Instead of predicting the tte itself the trick is to let your machine learning model output the *parameters of a distribution*. This could be any machine learning model but we like RNNs:
+
 ![example WTTE-RNN architecture](fig_rnn_weibull.png)
 
-The Weibull distribution is used because it's [awesome](https://ragulpr.github.io/2016/12/22/WTTE-RNN-Hackless-churn-modeling/#embrace-the-weibull-euphoria) but I hope to see many extensions. We train the algos with a special log-loss for censored data. 
+One could use any distribution but we like the *Weibull distribution* because it's [awesome](https://ragulpr.github.io/2016/12/22/WTTE-RNN-Hackless-churn-modeling/#embrace-the-weibull-euphoria) but I hope to see many extensions. We train the algos with a special log-loss for censored data. 
 
 In essence, we want to assign high probability at the *next* event and low probability where there *wasn't* any events (censored data): 
+
 ![WTTE-RNN prediction over a timeline](solution_beta_2.gif)
 
 What we get is a pretty neat prediction about the *distribution of the tte* in each step. A neat sideresult is a 2-d embedding that can be used to visualize *when* (alpha) and *how sure we are* (beta):
+
 ![WTTE-RNN alphabeta.png](alphabeta.png)
 
 # ROADMAP
