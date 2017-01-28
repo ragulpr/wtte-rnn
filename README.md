@@ -1,10 +1,29 @@
 # WTTE-RNN
-A hackless machine-learning framework for churn- and time to event prediction. Forecasting problems as diverse as server monitoring to earthquake- and churn-prediction can be posed as the problem of predicting the time to an event. **churn_watch** is a data-science philosophy on how this should be done. The core technology is the WTTE-RNN algorithm ([blog post](https://ragulpr.github.io/2016/12/22/WTTE-RNN-Hackless-churn-modeling/), [master thesis](https://ragulpr.github.io/assets/draft_master_thesis_martinsson_egil_wtte_rnn_2016.pdf))
+Weibull Time to Event Reccurent Neural Network
 
-<blockquote class="imgur-embed-pub" lang="en" data-id="0oVdKiv"><a href="//imgur.com/0oVdKiv"></a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>
+A less hacky machine-learning framework for churn- and time to event prediction. Forecasting problems as diverse as server monitoring to earthquake- and churn-prediction can be posed as the problem of predicting the time to an event. WTTE-RNN is an algorithm and a philosophy about how this should be done. 
+
+* [blog post](https://ragulpr.github.io/2016/12/22/WTTE-RNN-Hackless-churn-modeling/) 
+* [master thesis](https://ragulpr.github.io/assets/draft_master_thesis_martinsson_egil_wtte_rnn_2016.pdf)
+* Quick visual intro to the [model](https://imgur.com/a/HX4KQ) 
+
+## Why it's cool
+We assume data of many time-series of events were we want to use historic data to predict the time to the next event (TTE). If we haven't observed the last event yet we only have the minimum of the tte to train on. This is called *censored data* (in red):
+[Censored data](data.gif)
+
+Instead of predicting the tte itself the trick is to let your machine learning model output the *parameters of a distribution*. 
+[example WTTE-RNN architecture](fig_rnn_weibull.png)
+
+The Weibull distribution is used because it's [awesome](https://ragulpr.github.io/2016/12/22/WTTE-RNN-Hackless-churn-modeling/#embrace-the-weibull-euphoria) but I hope to see many extensions. We train the algos with a special log-loss for censored data. 
+
+In essence, we want to assign high probability at the *next* event and low probability where there *wasn't* any events (censored data): 
+[WTTE-RNN prediction over a timeline](solution_beta_2.gif)
+
+What we get is a pretty neat prediction about the *distribution of the tte* in each step. A neat sideresult is a 2-d embedding that can be used to visualize *when* (alpha) and *how sure we are* (beta):
+[WTTE-RNN alphabeta.png](alphabeta.png)
 
 # ROADMAP
-The goal is to create a forkable and easily deployable model framework. WTTE-RNN is the algorithm, churn_watch is the deployment - an opinionated idea about how churn-monitoring and reporting can be made beautiful and easy. 
+The project is on the TODO-state. The goal is to create a forkable and easily deployable model framework. WTTE-RNN is the algorithm, churn_watch is the deployment - an opinionated idea about how churn-monitoring and reporting can be made beautiful and easy. 
 
 ## Implementations of the objective functions
 The core technology is the objective functions. These can be used with any machine-learning algorithm. To spread the word we should implement and commit them to various ML-projects. 
@@ -48,11 +67,11 @@ To get this going we need at least one off-the-shelf deep-learning implementatio
 
 # Citation
 
-@MastersThesis{martinsson:Thesis:2016,
-    author     =     {Egil Martinsson},
-    title     =     {WTTE-RNN : Weibull Time To Event Recurrent Neural Network},
-    school     =     {Chalmers University Of Technology},
-    year     =     {2016},
-    }
+	@MastersThesis{martinsson:Thesis:2016,
+	    author     =     {Egil Martinsson},
+	    title     =     {WTTE-RNN : Weibull Time To Event Recurrent Neural Network},
+	    school     =     {Chalmers University Of Technology},
+	    year     =     {2016},
+	    }
 
 Reach out to egil.martinsson[at]gmail.com if you have any questions!
