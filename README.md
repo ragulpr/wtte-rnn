@@ -1,5 +1,5 @@
 # WTTE-RNN
-Weibull Time to Event Reccurent Neural Network
+Weibull Time To Event Reccurent Neural Network
 
 A less hacky machine-learning framework for churn- and time to event prediction. Forecasting problems as diverse as server monitoring to earthquake- and churn-prediction can be posed as the problem of predicting the time to an event. WTTE-RNN is an algorithm and a philosophy about how this should be done. 
 
@@ -8,7 +8,7 @@ A less hacky machine-learning framework for churn- and time to event prediction.
 * Quick visual intro to the [model](https://imgur.com/a/HX4KQ) 
 
 ## Basics
-You have data consisting of many time-series of events and want to use historic data to predict the time to the next event (TTE). If you haven't observed the last event yet there's only the minimum of the TTE to train on. This results in what's *censored data* (in red):
+You have data consisting of many time-series of events and want to use historic data to predict the time to the next event (TTE). If you haven't observed the last event yet we've only observed a minimum bound of the TTE to train on. This results in what's called *censored data* (in red):
 
 ![Censored data](data.gif)
 
@@ -16,9 +16,7 @@ Instead of predicting the TTE itself the trick is to let your machine learning m
 
 ![example WTTE-RNN architecture](fig_rnn_weibull.png)
 
-Hopefully there'll be lot's of extensions. We train the algos with a special log-loss that can work with censored data too.
-
-In essence, we want to assign high probability at the *next* event or low probability where there *wasn't* any events (censored data): 
+The next step is to train the algo of choice with a special log-loss that can work with censored data. The intuition behind it is that we want to assign high probability at the *next* event or low probability where there *wasn't* any events (censored data): 
 
 ![WTTE-RNN prediction over a timeline](solution_beta_2.gif)
 
@@ -31,12 +29,12 @@ A neat sideresult is that the predicted params is a 2-d embedding that can be us
 ![WTTE-RNN alphabeta.png](alphabeta.png)
 
 # Warnings
-There's alot of mathematical theory basically justifying us to use a nice loss function in certain situations:
+There's alot of mathematical theory basically justifying us to use this nice loss function in certain situations:
 
 ![loss-equation](equation.png)
 
 
-So for censored data it only rewards *predicting further away*. To get this to work you need the censoring time to be independent from your feature data. If your features contains information about the point of censoring your algorithm will learn to cheat by predicting far away based on probability of censoring instead of tte. A type of overfitting/artifact learning. Global features can have this effect if not properly treated.
+So for censored data it only rewards *pushing the distribution up*, beyond the point of censoring. To get this to work you need the censoring mechanism to be independent from your feature data. If your features contains information about the point of censoring your algorithm will learn to cheat by predicting far away based on probability of censoring instead of tte. A type of overfitting/artifact learning. Global features can have this effect if not properly treated.
 
 # ROADMAP
 The project is on the TODO-state. The goal is to create a forkable and easily deployable model framework. WTTE-RNN is the algorithm, churn_watch is the deployment - an opinionated idea about how churn-monitoring and reporting can be made beautiful and easy. Pull-requests, recommendations, comments and contributions very welcome.

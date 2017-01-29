@@ -208,6 +208,11 @@ def tester_steps_since_true():
                   'cens_expct:',expected_censoring, '\n',k
 
 
+    # for i in xrange(4):
+    #     res = steps_since_true_minimal(event_sequences[i,:])-expected_steps_since_true['count_up_to_false'][i,:]
+    #     if any(res!=0):
+    #         print 'a'
+            
 #tester_steps_since_true()
 
 def roll_fun(x,size,fun=np.mean):
