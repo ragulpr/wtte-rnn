@@ -7,8 +7,8 @@ A less hacky machine-learning framework for churn- and time to event prediction.
 * [master thesis](https://ragulpr.github.io/assets/draft_master_thesis_martinsson_egil_wtte_rnn_2016.pdf)
 * Quick visual intro to the [model](https://imgur.com/a/HX4KQ) 
 
-## Why it's cool
-The data consists of many time-series of events were you want to use historic data to predict the time to the next event (TTE). If you haven't observed the last event yet there's only the minimum of the TTE to train on. This is called *censored data* (in red):
+## Basics
+You have data consisting of many time-series of events and want to use historic data to predict the time to the next event (TTE). If you haven't observed the last event yet there's only the minimum of the TTE to train on. This results in what's *censored data* (in red):
 
 ![Censored data](data.gif)
 
@@ -16,7 +16,7 @@ Instead of predicting the TTE itself the trick is to let your machine learning m
 
 ![example WTTE-RNN architecture](fig_rnn_weibull.png)
 
-Hopefully there'll be lot's of extensions. We train the algos with a special log-loss for censored data. 
+Hopefully there'll be lot's of extensions. We train the algos with a special log-loss that can work with censored data too.
 
 In essence, we want to assign high probability at the *next* event or low probability where there *wasn't* any events (censored data): 
 
