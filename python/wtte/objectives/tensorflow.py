@@ -1,3 +1,6 @@
+import tensorflow as tf
+# TODO verify ok with tf 1.0 
+
 def weibull_logLik_continuous(a, b, y_, u_, name=None):
     """Returns element-wise Weibull censored log-likelihood.
     
