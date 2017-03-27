@@ -2,3 +2,8 @@
 *.csv
 *.history
 *.ipynb_checkpoints
+python/build/
+
+python/dist/
+
+python/wtte\.egg-info/
