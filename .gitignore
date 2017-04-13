@@ -7,3 +7,11 @@ python/build/
 python/dist/
 
 python/wtte\.egg-info/
+
+python/\.cache/
+
+python/\.eggs/
+
+python/tests/__pycache__/
+
+*.pyc
