@@ -128,8 +128,13 @@ class loss(object):
 
         def loglik_continuous(y, u, a, b, epsilon=1e-35):
             ya = (y + epsilon) / a
-            logLikelihoods = u * (K.log(b) + b * K.log(ya)) - K.pow(ya, b)
-            return logLikelihoods
+            loglikelihoods = u * (K.log(b) + b * K.log(ya)) - K.pow(ya, b)
+            return loglikelihoods
+
+        def loglik_continuous_conditional_correction(y, u, a, b, epsilon=1e-35):
+            ya = (y + epsilon) / a
+            loglikelihoods = y*(u * (K.log(b) + b * K.log(ya)) - (b/(b+1.))*K.pow(ya, b))
+            return loglikelihoods
 
         def penalty_term(b, location, growth):
             scale = growth / location
@@ -144,7 +149,7 @@ class loss(object):
                 loss = -1.0 * K.mean(loglikelihoods, axis=-1)
             else:
                 # TODO: this is dot product
-                #                loss = -1.0*K.sum(loglikelihoods*weights,axis=-1)/K.sum(weights,axis=-1)
+                # loss = -1.0*K.sum(loglikelihoods*weights,axis=-1)/K.sum(weights,axis=-1)
                 loss = -1.0 * K.sum(loglikelihoods * weights) / K.sum(weights)
             return loss
 
@@ -153,7 +158,7 @@ class loss(object):
 
         if self.kind == 'discrete':
             loglikelihoods = loglik_discrete(y, u, a, b)
-        else:
+        elif self.kind == 'continuous':
             loglikelihoods = loglik_continuous(y, u, a, b)
 
         if self.regularize:
