@@ -1,7 +1,9 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 import tensorflow as tf
-# TODO verify ok with tf 1.0 
 
-def weibull_logLik_continuous(a, b, y_, u_, name=None):
+def loglik_continuous(a, b, y_, u_,output_collection=(), name=None):
     """Returns element-wise Weibull censored log-likelihood.
     
     Continuous weibull log-likelihood. loss=-loglikelihood.
@@ -14,20 +16,24 @@ def weibull_logLik_continuous(a, b, y_, u_, name=None):
             `float64`.
         u_: indicator 0.0 if right censored, 1.0 if uncensored
             `Tensor` of type `float32`, `float64`.
-        name: A name for the operation (optional).
+        output_collection: `tuple` of `string`s, name of the collection to
+                          collect result of this op.
+        name: `string`, name of the operation.
 
     Returns:
         A `Tensor` of log-likelihoods of same shape as a, b, y_, u_
     """
+    
+    with tf.name_scope(name, "weibull_loglik_continuous", [a, b, y_, u_]):
 
-    ya = tf.div(y_+1e-35, a)  # Small optimization y/a
-    return(
-        tf.mul(u_,
-               tf.log(b)+tf.mul(b, tf.log(ya))
-        )-tf.pow(ya, b)
-    )
+        ya = tf.div(y_+1e-35, a)  # Small optimization y/a
 
-def weibull_logLik_discrete(a, b, y_, u_, name=None):
+        loglik = tf.multiply(u_,tf.log(b)+tf.multiply(b, tf.log(ya)))-tf.pow(ya, b)
+        tf.add_to_collection(output_collection, loglik)
+
+    return(loglik)
+
+def loglik_discrete(a, b, y_, u_,output_collection=(), name=None):
     """Returns element-wise Weibull censored discrete log-likelihood.
     
     Unit-discretized weibull log-likelihood. loss=-loglikelihood.
@@ -39,18 +45,22 @@ def weibull_logLik_discrete(a, b, y_, u_, name=None):
         y_: time to event. Positive `Tensor` of type `float32`, `float64`.
         u_: indicator 0.0 if right censored, 1.0 if uncensored
             `Tensor` of type `float32`, `float64`.
-        name: A name for the operation (optional).
-
+        output_collection: `tuple` of `string`s, name of the collection to
+                          collect result of this op.
+        name: `string`, name of the operation.
     Returns:
         A `Tensor` of log-likelihoods of same shape as a, b, y_, u_
     """
 
-    with tf.name_scope(name):
+    with tf.name_scope(name, "weibull_loglik_discrete", [a, b, y_, u_]):
         hazard0 = tf.pow(tf.div(y_+1e-35, a), b)  # 1e-9 safe, really
         hazard1 = tf.pow(tf.div(y_+1.0, a), b)
-    return(tf.mul(u_, tf.log(tf.exp(hazard1-hazard0)-1.0))-hazard1)
+        loglik = tf.multiply(u_, tf.log(tf.exp(hazard1-hazard0)-1.0))-hazard1
 
-def weibull_betapenalty(b, location = 10.0, growth=20.0, name=None):
+        tf.add_to_collection(output_collection, loglik)
+    return(loglik)
+
+def betapenalty(b, location = 10.0, growth=20.0, output_collection=(), name=None):
     """Returns a positive penalty term exploding when beta approaches location.
 
     Adding this term to the loss may prevent overfitting and numerical instability
@@ -58,12 +68,17 @@ def weibull_betapenalty(b, location = 10.0, growth=20.0, name=None):
 
     Args:
         b:  beta.  Positive nonzero `Tensor` of type `float32`, `float64`.
-        name: A name for the operation (optional).
+        output_collection: `tuple` of `string`s, name of the collection to
+                          collect result of this op.
+        name: `string`, name of the operation.
 
     Returns:
         A positive `Tensor` of same shape as `b` being a penalty term
     """
-    with tf.name_scope(name):
+    with tf.name_scope(name, "weibull_betapenalty", [a, b, y_, u_]):
         scale = growth/location
-        penalty_ = tf.exp(scale*(b-location))
-    return(penalty_)
+        penalty = tf.exp(scale*(b-location))
+        tf.add_to_collection(output_collection, penalty)
+
+    return(penalty)
+
