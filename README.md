@@ -8,6 +8,13 @@ A less hacky machine-learning framework for churn- and time to event prediction.
 * Quick visual intro to the [model](https://imgur.com/a/HX4KQ) 
 * [Jupyter notebook](/python/examples/keras/simple_example.ipynb) 
 
+# Installation
+For the python implementation:
+
+    $ git clone https://github.com/ragulpr/wtte-rnn  
+    $ cd python
+    $ python setup.py install
+
 ## Basics
 You have data consisting of many time-series of events and want to use historic data to predict the time to the next event (TTE). If you haven't observed the last event yet we've only observed a minimum bound of the TTE to train on. This results in what's called *censored data* (in red):
 

@@ -11,5 +11,4 @@ setup(name='wtte',
       install_requires=['numpy', 'pandas', 'keras','tensorflow'],
       setup_requires=['pytest-runner'],
       tests_require=['pytest'],
-      packages=find_packages())
-
+      packages=find_packages('.'))
