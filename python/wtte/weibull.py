@@ -42,17 +42,36 @@ def mean(a, b):
     from scipy.special import gamma
     return a * gamma(1.0 + 1.0 / b)
 
-def continuous_logLik(t, a, b, u=1):
+def continuous_loglik(t, a, b, u=1):
     # With equality instead of proportionality. 
     return u*np.log(pdf(t, a, b))+(1-u)*np.log(1.0-cdf(t, a, b))
 
-def discrete_logLik(t, a, b, u=1):
+def discrete_loglik(t, a, b, u=1):
     # With equality instead of proportionality. 
     return u*np.log(pmf(t, a, b))+(1-u)*np.log(1.0-cdf(t+1.0, a, b))
 
+def cequantile(t, a, b, p):
+    # TODO this is not tested yet.
+    # tests: 
+    #    cequantile(0., a, b, p)==quantiles(a, b, p)
+    #    cequantile(t, a, 1., p)==cequantile(0., a, 1., p)
+    # conditional excess quantile
+    # t+s : Pr(Y<t+s|y>t)=p
+    
+    print 'not tested'
+    L = np.power((t+.0)/ a,b)
+
+    quantile = a * np.power(-np.log(1. - p) - L,1. / b)
+
+    return quantile
+
 def cemean(t, a, b):
     # TODO this is not tested yet.
+    # tests: 
+    #    cemean(0., a, b)==mean(a, b, p)
+    #    mean(t, a, 1., p)==mean(0., a, 1., p) == a
     # conditional excess mean
+    # E[Y|y>t]
     # (conditional mean age at failure)
     # http://reliabilityanalyticstoolkit.appspot.com/conditional_distribution
     from scipy.special import gamma
@@ -62,17 +81,7 @@ def cemean(t, a, b):
 
     v = 1. + 1. / b
     gv = gamma(v)
-    L = (t / a) ^ b
-    cemean = a * gv * np.exp(L) * (1 - gammaic(v, t / a) / gv)
+    L = np.power((t+.0)/ a,b)
+    cemean = a * gv * np.exp(L) * (1 - gammainc(v, t / a) / gv)
 
     return cemean
-
-def cequantile(t, a, b, p):
-    # TODO this is not tested yet.
-    # conditional excess quantile
-    print 'not tested'
-    L = (t / a) ^ b
-
-    quantile = a * (-np.log(1 - p) - L) ^ (1 / b)
-
-    return quantile
