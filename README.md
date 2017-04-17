@@ -15,6 +15,8 @@ For the python implementation:
     $ cd python
     $ python setup.py install
 
+if this seems like overkill check out the [inlined jupyter notebook](/python/examples/keras/standalone_simple_example.ipynb) 
+
 ## Basics
 You have data consisting of many time-series of events and want to use historic data to predict the time to the next event (TTE). If you haven't observed the last event yet we've only observed a minimum bound of the TTE to train on. This results in what's called *censored data* (in red):
 
