@@ -97,4 +97,6 @@ The WTTE-RNN is as much an ML-algorithm as a visual language to talk about this 
 	    year     =     {2016},
 	    }
 
-Reach out to egil.martinsson[at]gmail.com if you have any questions!
+Reach out to egil.martinsson[at]gmail.com if you have any questions. 
+If you can, please open an issue so other can join in. 
+Contributions/PR/Comments etc are very welcome!
