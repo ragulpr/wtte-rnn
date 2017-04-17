@@ -127,12 +127,32 @@ def get_tte_continuous(is_event, t_elapsed):
     return tte
 
 def get_tte(is_event, discrete_time, t_elapsed=None):
+    """(wrapper) calculates Time To Event for input vector.
+    """
     if discrete_time:
         return get_tte_discrete(is_event, t_elapsed)
     else:
         return get_tte_continuous(is_event, t_elapsed)
 
+def get_tse(is_event, t_elapsed=None):
+    """(wrapper) calculates Time Since Event for input vector.
 
+        Inverse of tte. Safe to use as a feature.
+        Always "continuous" method of calculating it.
+        tse >0 at time of event 
+            (if discrete we dont know about the event yet, if continuous 
+            we know at record of event so superfluous to have tse=0)
+        tse = 0 at first step
+
+        TODO reverse-indexing is pretty slow and ugly and not a 
+        helpful template for implementing in other languages. 
+    """
+    if t_elapsed is not None:
+        t_elapsed = t_elapsed.max()-t_elapsed[::-1]
+        
+    return get_tte_continuous(is_event[::-1], t_elapsed)[::-1]
+
+ 
 def get_is_not_censored(is_event, discrete_time=True):
     """ Calculates non-censoring indicator u
     """
