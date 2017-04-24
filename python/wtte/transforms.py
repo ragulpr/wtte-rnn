@@ -452,8 +452,8 @@ def shift_discrete_padded_features(padded, fill=0):
         Unfortunately it usually makes sense to decide on fill-value 
         after feature normalization so do it on padded values
     """
-    padded = np.roll(padded, shift=1, axis=2)
-    padded[:, 0, :] = fill
+    padded = np.roll(padded, shift=1, axis=1)
+    padded[:, 0] = fill
     return padded
 
 

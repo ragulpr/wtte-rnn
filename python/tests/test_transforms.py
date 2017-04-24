@@ -6,7 +6,7 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from wtte.transforms import df_to_padded, padded_to_df
+from wtte.transforms import df_to_padded, padded_to_df,shift_discrete_padded_features
 
 def generate_random_df(n_seqs, max_seq_length):
     """ generates random dataframe for testing.
@@ -82,4 +82,11 @@ def test_df_to_padded_padded_to_df():
         df[['id', 't', 'event', 'int_column', 'double_column']].values == df_new.values)[0],\
         'test_df_to_padded_padded_to_df failed'
 
-test_df_to_padded_padded_to_df()
+def test_shift_discrete_padded_features():
+    x = np.array([[[1],[2],[3]]])
+    assert x.shape == (1, 3, 1)
+
+    x_shifted = shift_discrete_padded_features(x, fill=0)
+
+    np.testing.assert_array_equal(x_shifted, np.array([[[0],[1],[2]]]))
+
