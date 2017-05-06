@@ -7,6 +7,24 @@ import pandas as pd
 
 from wtte.transforms import padded_events_to_tte, padded_events_to_not_censored
 
+padded_time_continuous = np.array(
+    [
+        [0, 1, 2, 3, 4],  # seq 1
+        [0, 1, 2, 3, 4],  # seq 2..
+        [0, 1, 2, 3, 4],
+        [0, 1, 2, 3, 4],
+        [0, 1, 2, 3, 4]
+    ])
+
+padded_time_discrete = np.array(
+    [
+        [0, 1, 2, 3],  # seq 1
+        [0, 1, 2, 3],  # seq 2..
+        [0, 1, 2, 3],
+        [0, 1, 2, 3],
+        [0, 1, 2, 3]
+    ])
+
 events_c = np.array(
     # (first time is a nullity)
     # "time when something did or didn't happen"
@@ -70,7 +88,7 @@ expected_tte_d = np.array(
     ])
 
 
-def test_censoring_funs():
+def test_censoring_funs_no_time():
     # TODO proper unit testing
 #    print 'TTE & CENSORING'
 #    print 'padded discrete'
@@ -87,6 +105,29 @@ def test_censoring_funs():
     expected_tte = expected_tte_c
     expected_is_censored = expected_is_censored_c
     times_to_event = padded_events_to_tte(events_c, discrete_time=False)
+    not_censored = padded_events_to_not_censored(events_c,
+                                                 discrete_time=False)
+
+    assert (expected_tte == times_to_event).all(), '  time_to_event failed'
+    assert (expected_is_censored != not_censored).all(), 'not_censored failed'
+
+def test_censoring_funs_with_time():
+    # TODO proper unit testing
+#    print 'TTE & CENSORING'
+#    print 'padded discrete'
+    expected_tte = expected_tte_d
+    expected_is_censored = expected_is_censored_d
+    times_to_event = padded_events_to_tte(events_d, discrete_time=True,t_elapsed=padded_time_discrete)
+    not_censored = padded_events_to_not_censored(
+        events_d, discrete_time=True)
+
+    assert (expected_tte == times_to_event).all(), '  time_to_event failed'
+    assert (expected_is_censored != not_censored).all(), 'not_censored failed'
+
+ #   print 'padded continuous'
+    expected_tte = expected_tte_c
+    expected_is_censored = expected_is_censored_c
+    times_to_event = padded_events_to_tte(events_c, discrete_time=False,t_elapsed=padded_time_continuous)
     not_censored = padded_events_to_not_censored(events_c,
                                                  discrete_time=False)
 
