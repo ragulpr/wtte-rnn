@@ -155,87 +155,6 @@ def padded_to_df(padded, column_names, dtypes, ids=None, id_col='id', t_col='t')
 
     return df_new
 
-############################## Awful testing
-
-def generate_random_df(n_seqs, max_seq_length):
-    """ generates random dataframe for testing.
-    """
-
-    seq_lengths = np.random.randint(max_seq_length, size=n_seqs) + 1
-    t_list = []
-    id_list = []
-    dt_list = []
-
-    for s in xrange(n_seqs):
-        random_length = np.sort(np.random.choice(
-            seq_lengths[s], 1, replace=False)) + 1
-        t = np.sort(np.random.choice(
-            seq_lengths[s], random_length, replace=False))
-
-        if seq_lengths[s] - 1 not in t:
-            t = np.insert(t, -1, seq_lengths[s] - 1)
-        if 0 not in t:
-            t = np.insert(t, 0, 0)
-
-        t = np.sort(t)
-
-        t_list.append(t)
-#        dt_list.append(max_seq_length-seq_lengths[s]+ t)
-        id_list.append(np.repeat(s, repeats=len(t)))
-
-    id_column = [item for sublist in id_list for item in sublist]
-    t_column = [item for sublist in t_list for item in sublist]
- #   dt_column      = [item for sublist in dt_list for item in sublist]
-
-    # do not assume row indicates event!
-    event_column = np.random.randint(2, size=len(t_column))
-    int_column = np.arange(len(event_column)).astype(int)
-    double_column = np.random.uniform(high=1, low=0, size=len(t_column))
-
-    df = pd.DataFrame({'id': id_column,
-                       't': t_column,
-                       'event': event_column,
-                       #                         'dt' : dt_column,
-                       'int_column': int_column,
-                       'double_column': double_column
-                       })
-
-#    df['dt']=df.groupby(['id'], group_keys=False).apply(lambda g: g.t.max())
-    df = df.assign(dt=10 * df.id + df.t)
-    df = df[['id', 't', 'dt', 'event', 'int_column', 'double_column']]
-    return df
-
-def test_df_to_padded_padded_to_df():
-    # TODO proper testing
-    # Call with names? Call with order?
-    # Continuous tte?
-    # Contiguous t?
-    #
-    np.random.seed(1)
-    n_seqs = 100
-    max_seq_length = 100
-    ids = xrange(n_seqs)
-    df = generate_random_df(n_seqs, max_seq_length)
-
-    column_names = ['event', 'int_column', 'double_column']
-    dtypes = ['double', 'int', 'float']
-
-    padded = df_to_padded(df, column_names)
-
-    df_new = padded_to_df(padded, column_names, dtypes, ids=ids)
-
-    assert False not in (
-        df[['id', 't', 'event', 'int_column', 'double_column']].values == df_new.values)[0],\
-        'test_df_to_padded_padded_to_df failed'
-
-test_df_to_padded_padded_to_df()
-
-
-def df_to_sparse_padded(df, column_names):
-    # TODO
-    return padded_sparse
-
-
 def padded_to_timelines(padded, user_starttimes):
     """ embeds padded events on a fixed timeline
         currently only makes sense for discrete padded in between data.
@@ -249,8 +168,7 @@ def padded_to_timelines(padded, user_starttimes):
     timeline_end = timeline_start + pd.DateOffset(seq_lengths.max())
 
     user_start_int = user_starttimes - timeline_start
-    user_start_int = user_start_int.dt.components.ix[
-        :, 0].values  # infer first component
+    user_start_int = user_start_int.dt.components.ix[:, 0].values  # infer first component
 
     # Sort to get stepwise entry onto timeline
     m = user_start_int.argsort()
