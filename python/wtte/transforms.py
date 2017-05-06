@@ -217,13 +217,14 @@ def padded_events_to_tte(events, discrete_time, t_elapsed=None):
     t_seq = None
     for s in xrange(n_seqs):
         n = seq_lengths[s]
-        event_seq = events[s, :n]
-        if t_elapsed is not None:
-            t_seq = t_elapsed[s, :n]
+        if n>0:
+            event_seq = events[s, :n]
+            if t_elapsed is not None:
+                t_seq = t_elapsed[s, :n]
 
-        times_to_event[s, :n] = get_tte(is_event=event_seq,
-                                        discrete_time=discrete_time,
-                                        t_elapsed=t_seq)
+            times_to_event[s, :n] = get_tte(is_event=event_seq,
+                                            discrete_time=discrete_time,
+                                            t_elapsed=t_seq)
 
     if np.isnan(times_to_event).any():
         times_to_event[np.isnan(events)] = np.nan
@@ -253,8 +254,9 @@ def padded_events_to_not_censored(events, discrete_time):
     is_not_censored = np.copy(events)
 
     for i in xrange(n_seqs):
-        is_not_censored[i][:seq_lengths[i]] = get_is_not_censored(
-            events[i][:seq_lengths[i]], discrete_time)
+        if seq_lengths[i]>0:
+            is_not_censored[i][:seq_lengths[i]] = get_is_not_censored(
+                events[i][:seq_lengths[i]], discrete_time)
     return is_not_censored
 
 # MISC / Data munging
@@ -392,7 +394,7 @@ def normalize_padded(padded, means=None, stds=None):
 
     is_flat = len(padded.shape) == 2
     if is_flat:
-        padded = padded.reshape([padded.shape[0], padded.shape[1], 1])
+        padded = np.expand_dims(padded, axis=-1)
 
     n_features = padded.shape[2]
     n_obs = padded.shape[0] * padded.shape[1]
