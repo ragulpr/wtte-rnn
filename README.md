@@ -6,7 +6,7 @@ A less hacky machine-learning framework for churn- and time to event prediction.
 * [blog post](https://ragulpr.github.io/2016/12/22/WTTE-RNN-Hackless-churn-modeling/)
 * [master thesis](https://ragulpr.github.io/assets/draft_master_thesis_martinsson_egil_wtte_rnn_2016.pdf)
 * Quick visual intro to the [model](https://imgur.com/a/HX4KQ) 
-* [Jupyter notebook](/python/examples/keras/simple_example.ipynb) 
+* Jupyter notebook: [basics](/python/examples/keras/simple_example.ipynb), [end to end](python/examples/data_pipeline/data_pipeline.ipynb )
 
 # Installation
 For the python implementation:
