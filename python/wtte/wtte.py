@@ -2,9 +2,34 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 import numpy as np
-import tensorflow as tf
+
 from keras import backend as K
-# TODO works only with tf backend.
+
+def _keras_unstack_hack(ab):
+    """Implements tf.unstack(y_true_keras, num=2, axis=-1).
+       Keras-hack adopted to be compatible with theano backend.
+    """
+    ndim = len(K.int_shape(ab))
+    if ndim==0:
+        print('can not unstack with ndim=0')
+    elif ndim==2:
+        a = ab[0]
+        b = ab[1]
+    elif ndim==2:
+        a = ab[:,0]
+        b = ab[:,1]
+    elif ndim==3:
+        a = ab[:,:,0]
+        b = ab[:,:,1]
+    elif ndim==4:
+        a = ab[:,:,:,0]
+        b = ab[:,:,:,1]
+    elif ndim==5:
+        a = ab[:,:,:,:,0]
+        b = ab[:,:,:,:,1]
+    else:
+        print('ndim >5 not yet implemented')
+    return a,b
 
 def output_lambda(x,init_alpha=1.0, max_beta_value=5.0):
     """Elementwise (Lambda) computation of alpha and regularized beta.
@@ -41,13 +66,13 @@ def output_lambda(x,init_alpha=1.0, max_beta_value=5.0):
         Returns:
             A positive `Tensor` of same shape as input
     """
-    a, b = tf.unstack(x, num=2, axis=-1)
+    a, b = _keras_unstack_hack(x)
 
     # Implicitly initialize alpha:
     a = init_alpha * K.exp(a)
     
     m = max_beta_value
-    if m > 1.337:  # some value >>1.0
+    if m > 1.05:  # some value >>1.0
         # shift to start around 1.0
         # assuming input is around 0.0
         _shift = np.log(m - 1.0)
@@ -61,9 +86,9 @@ def output_lambda(x,init_alpha=1.0, max_beta_value=5.0):
     # Clipped sigmoid : has zero gradient at 0,1
     # Reduces the small tendency of instability after long training
     # by zeroing gradient. 
-    b = m * tf.clip_by_value(b, 1e-6, 0.999999)
+    b = m*K.clip(x=b,min_value=K.epsilon(),max_value=1.-K.epsilon())
 
-    x = tf.stack([a, b], axis=-1)
+    x = K.stack([a,b],axis = -1) 
 
     return x
 
@@ -125,8 +150,8 @@ class loss(object):
             """
                 Everything is a hack around the y_true,y_pred paradigm.
             """
-            y, u   = tf.unstack(y_true, num=2, axis=-1)
-            a, b   = tf.unstack(y_pred, num=2, axis=-1)
+            y, u   = _keras_unstack_hack(y_true)
+            a, b   = _keras_unstack_hack(y_pred)
 
             return y, u, a, b
 

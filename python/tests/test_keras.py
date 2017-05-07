@@ -4,8 +4,8 @@ from __future__ import print_function
 import pytest
 
 import numpy as np
-import tensorflow as tf
 
+from keras import backend as K
 from keras.models import Sequential
 from keras.layers import Dense,Lambda,Masking
 from keras.layers.wrappers import TimeDistributed
@@ -13,6 +13,18 @@ from keras.layers.wrappers import TimeDistributed
 from keras.optimizers import RMSprop
 
 from wtte import wtte as wtte
+
+def test_keras_unstack_hack():
+    y_true_np = np.random.random([1,3,2])
+    y_true_np[:,:,0] = 0
+    y_true_np[:,:,1] = 1
+
+    y_true_keras = K.variable(y_true_np)
+
+    y, u = wtte._keras_unstack_hack(y_true_keras)
+    y_true_keras_new = K.stack([y,u],axis = -1)
+
+    np.testing.assert_array_equal(K.eval(y_true_keras_new),y_true_np)
 
 ## SANITY CHECK: Use pure Weibull data censored at C(ensoring point). 
 ## Should converge to the generating A(alpha) and B(eta) for each timestep
@@ -88,7 +100,7 @@ def model_masking(discrete_time,init_alpha,max_beta):
 
 def keras_loglik_runner(discrete_time,add_masking):
     np.random.seed(1)
-    tf.set_random_seed(1)
+#    tf.set_random_seed(1)
 
     y_train,x_train,y_test,x_test = get_data(discrete_time=discrete_time)
     
