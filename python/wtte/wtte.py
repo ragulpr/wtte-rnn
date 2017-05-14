@@ -6,6 +6,7 @@ import numpy as np
 
 from keras import backend as K
 
+
 def _keras_unstack_hack(ab):
     """Implements tf.unstack(y_true_keras, num=2, axis=-1).
        Keras-hack adopted to be compatible with theano backend.
@@ -14,12 +15,12 @@ def _keras_unstack_hack(ab):
     if ndim == 0:
         print('can not unstack with ndim=0')
     else:
-        a = ab[...,0]
-        b = ab[...,1]
+        a = ab[..., 0]
+        b = ab[..., 1]
     return a, b
 
 
-def output_lambda(x,init_alpha=1.0, max_beta_value=5.0):
+def output_lambda(x, init_alpha=1.0, max_beta_value=5.0):
     """Elementwise (Lambda) computation of alpha and regularized beta.
 
         Alpha: 
@@ -47,7 +48,7 @@ def output_lambda(x,init_alpha=1.0, max_beta_value=5.0):
         Args:
             x: tensor with last dimension having length 2
                 with x[-1][0] = alpha, x[-1][1] = beta
-        
+
         Usage:
             model.add(Dense(2))
             model.add(Lambda(output_lambda, arguments={"init_alpha":100., "max_beta_value":2.0}))
@@ -58,7 +59,7 @@ def output_lambda(x,init_alpha=1.0, max_beta_value=5.0):
 
     # Implicitly initialize alpha:
     a = init_alpha * K.exp(a)
-    
+
     m = max_beta_value
     if m > 1.05:  # some value >>1.0
         # shift to start around 1.0
@@ -73,12 +74,13 @@ def output_lambda(x,init_alpha=1.0, max_beta_value=5.0):
 
     # Clipped sigmoid : has zero gradient at 0,1
     # Reduces the small tendency of instability after long training
-    # by zeroing gradient. 
-    b = m*K.clip(x=b,min_value=K.epsilon(),max_value=1.-K.epsilon())
+    # by zeroing gradient.
+    b = m * K.clip(x=b, min_value=K.epsilon(), max_value=1. - K.epsilon())
 
-    x = K.stack([a,b],axis = -1) 
+    x = K.stack([a, b], axis=-1)
 
     return x
+
 
 class output_activation(object):
     """ Elementwise computation of alpha and regularized beta using keras.layers.Activation.
@@ -92,14 +94,17 @@ class output_activation(object):
             model.add(Activation(wtte_activation))
 
     """
+
     def __init__(self, init_alpha=1.0, max_beta_value=5.0):
         self.init_alpha = init_alpha
         self.max_beta_value = max_beta_value
 
     def activation(self, ab):
-        ab = output_lambda(ab,init_alpha=self.init_alpha, max_beta_value=self.max_beta_value)
+        ab = output_lambda(ab, init_alpha=self.init_alpha,
+                           max_beta_value=self.max_beta_value)
 
         return ab
+
 
 class loss(object):
     """ Creates a keras WTTE-loss function. 
@@ -128,7 +133,7 @@ class loss(object):
         self.kind = kind
         self.reduce_loss = reduce_loss
 
-        self.regularize = regularize        
+        self.regularize = regularize
         if regularize:
             self.location = location
             self.growth = growth
@@ -138,8 +143,8 @@ class loss(object):
             """
                 Everything is a hack around the y_true,y_pred paradigm.
             """
-            y, u   = _keras_unstack_hack(y_true)
-            a, b   = _keras_unstack_hack(y_pred)
+            y, u = _keras_unstack_hack(y_true)
+            a, b = _keras_unstack_hack(y_pred)
 
             return y, u, a, b
 
@@ -161,7 +166,8 @@ class loss(object):
                 Explanation TODO
             """
             ya = (y + epsilon) / a
-            loglikelihoods = y*(u * (K.log(b) + b * K.log(ya)) - (b/(b+1.))*K.pow(ya, b))
+            loglikelihoods = y * \
+                (u * (K.log(b) + b * K.log(ya)) - (b / (b + 1.)) * K.pow(ya, b))
             return loglikelihoods
 
         def penalty_term(b, location, growth):

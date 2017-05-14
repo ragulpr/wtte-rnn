@@ -11,7 +11,8 @@ import pandas as pd
 # of having inline-able utility functions readable by data-scientists
 # and translatable to other dataframe/vectorized languages.
 
-############################## Vector based operations
+# Vector based operations
+
 
 def roll_fun(x, size, fun=np.mean, reverse=False):
     y = np.copy(x)
@@ -126,6 +127,7 @@ def get_tte_continuous(is_event, t_elapsed):
             t_next = t_elapsed[i]
     return tte
 
+
 def get_tte(is_event, discrete_time, t_elapsed=None):
     """(wrapper) calculates Time To Event for input vector.
     """
@@ -133,6 +135,7 @@ def get_tte(is_event, discrete_time, t_elapsed=None):
         return get_tte_discrete(is_event, t_elapsed)
     else:
         return get_tte_continuous(is_event, t_elapsed)
+
 
 def get_tse(is_event, t_elapsed=None):
     """(wrapper) calculates Time Since Event for input vector.
@@ -148,11 +151,11 @@ def get_tse(is_event, t_elapsed=None):
         helpful template for implementing in other languages. 
     """
     if t_elapsed is not None:
-        t_elapsed = t_elapsed.max()-t_elapsed[::-1]
-        
+        t_elapsed = t_elapsed.max() - t_elapsed[::-1]
+
     return get_tte_continuous(is_event[::-1], t_elapsed)[::-1]
 
- 
+
 def get_is_not_censored(is_event, discrete_time=True):
     """ Calculates non-censoring indicator u
     """
@@ -175,6 +178,3 @@ def get_is_not_censored(is_event, discrete_time=True):
                 event_seen = is_event[i]
 
     return is_not_censored
-
-
-

@@ -1,8 +1,9 @@
 import numpy as np
 import pandas as pd
 
-from tte_util import get_tte,get_is_not_censored
-############################## Transforms
+from tte_util import get_tte, get_is_not_censored
+# Transforms
+
 
 def df_to_array(df, column_names, nanpad_right=True, return_lists=False, id_col='id', t_col='t'):
     """converts flat pandas df {id,t,col1,col2,..} to array indexed [id,t,col].
@@ -155,6 +156,7 @@ def padded_to_df(padded, column_names, dtypes, ids=None, id_col='id', t_col='t')
 
     return df_new
 
+
 def padded_to_timelines(padded, user_starttimes):
     """ embeds padded events on a fixed timeline
         currently only makes sense for discrete padded in between data.
@@ -168,7 +170,8 @@ def padded_to_timelines(padded, user_starttimes):
     timeline_end = timeline_start + pd.DateOffset(seq_lengths.max())
 
     user_start_int = user_starttimes - timeline_start
-    user_start_int = user_start_int.dt.components.ix[:, 0].values  # infer first component
+    user_start_int = user_start_int.dt.components.ix[
+        :, 0].values  # infer first component
 
     # Sort to get stepwise entry onto timeline
     m = user_start_int.argsort()
@@ -186,7 +189,8 @@ def padded_to_timelines(padded, user_starttimes):
     for s in xrange(n_seqs):
         user_end_int = user_start_int[s] + sl_sorted[s]
 
-        padded_timelines[s, user_start_int[s]:user_end_int] = padded[s, :sl_sorted[s]]
+        padded_timelines[s, user_start_int[s]
+            :user_end_int] = padded[s, :sl_sorted[s]]
     return padded_timelines, timeline_start, timeline_end
 
 
@@ -203,7 +207,8 @@ def plot_timeline(padded_timelines, title='events'):
     fig.gca().invert_yaxis()
     return fig, ax
 
-############################## Calculation
+# Calculation
+
 
 def padded_events_to_tte(events, discrete_time, t_elapsed=None):
     """ computes (right censored) time to event from padded binary events.
@@ -217,7 +222,7 @@ def padded_events_to_tte(events, discrete_time, t_elapsed=None):
     t_seq = None
     for s in xrange(n_seqs):
         n = seq_lengths[s]
-        if n>0:
+        if n > 0:
             event_seq = events[s, :n]
             if t_elapsed is not None:
                 t_seq = t_elapsed[s, :n]
@@ -254,7 +259,7 @@ def padded_events_to_not_censored(events, discrete_time):
     is_not_censored = np.copy(events)
 
     for i in xrange(n_seqs):
-        if seq_lengths[i]>0:
+        if seq_lengths[i] > 0:
             is_not_censored[i][:seq_lengths[i]] = get_is_not_censored(
                 events[i][:seq_lengths[i]], discrete_time)
     return is_not_censored
@@ -271,6 +276,7 @@ def padded_events_to_not_censored(events, discrete_time):
 
 #     print('Not yet implemented')
 #     return None
+
 
 def df_to_padded_df(df, id_col='id', t_col='t', abs_time_col='dt'):
     """zeropadds a df between timesteps.
@@ -332,7 +338,7 @@ def df_join_in_endtime(df, per_id_cols='id', abs_time_col='dt', abs_endtime=None
 
     df = pd.merge(df_ids, df, how='outer')
 
-    df.sort_values(by=[per_id_cols[0], abs_time_col],inplace=True)
+    df.sort_values(by=[per_id_cols[0], abs_time_col], inplace=True)
     df = df.fillna(nanfill_val)
     return df
 
@@ -424,13 +430,3 @@ def normalize_padded(padded, means=None, stds=None):
         # Return to flat
         padded = np.squeeze(padded)
     return padded, means, stds
-
-    
-
-
-
-
-
-
-
-

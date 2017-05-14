@@ -39,7 +39,7 @@ events_c = np.array(
 
 expected_is_censored_c = np.array(
     # expected_is_censored_c[:,:-1] = expected_is_censored_d
-    # Last step is always censored 
+    # Last step is always censored
     # (observed future interval length = 0)
     [
         [1, 1, 1, 1, 1],
@@ -60,7 +60,7 @@ expected_tte_c = np.array(
     ])
 
 events_d = np.array(
-# Discrete events comes from continuous reality. 
+    # Discrete events comes from continuous reality.
     [
         [0, 0, 0, 0],  # seq 1
         [0, 0, 0, 1],  # seq 2..
@@ -90,8 +90,8 @@ expected_tte_d = np.array(
 
 def test_censoring_funs_no_time():
     # TODO proper unit testing
-#    print 'TTE & CENSORING'
-#    print 'padded discrete'
+    #    print 'TTE & CENSORING'
+    #    print 'padded discrete'
     expected_tte = expected_tte_d
     expected_is_censored = expected_is_censored_d
     times_to_event = padded_events_to_tte(events_d, discrete_time=True)
@@ -111,13 +111,15 @@ def test_censoring_funs_no_time():
     assert (expected_tte == times_to_event).all(), '  time_to_event failed'
     assert (expected_is_censored != not_censored).all(), 'not_censored failed'
 
+
 def test_censoring_funs_with_time():
     # TODO proper unit testing
-#    print 'TTE & CENSORING'
-#    print 'padded discrete'
+    #    print 'TTE & CENSORING'
+    #    print 'padded discrete'
     expected_tte = expected_tte_d
     expected_is_censored = expected_is_censored_d
-    times_to_event = padded_events_to_tte(events_d, discrete_time=True,t_elapsed=padded_time_discrete)
+    times_to_event = padded_events_to_tte(
+        events_d, discrete_time=True, t_elapsed=padded_time_discrete)
     not_censored = padded_events_to_not_censored(
         events_d, discrete_time=True)
 
@@ -127,7 +129,8 @@ def test_censoring_funs_with_time():
  #   print 'padded continuous'
     expected_tte = expected_tte_c
     expected_is_censored = expected_is_censored_c
-    times_to_event = padded_events_to_tte(events_c, discrete_time=False,t_elapsed=padded_time_continuous)
+    times_to_event = padded_events_to_tte(
+        events_c, discrete_time=False, t_elapsed=padded_time_continuous)
     not_censored = padded_events_to_not_censored(events_c,
                                                  discrete_time=False)
 
