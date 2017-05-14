@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+
 import numpy as np
 
 from keras import backend as K
@@ -10,26 +11,13 @@ def _keras_unstack_hack(ab):
        Keras-hack adopted to be compatible with theano backend.
     """
     ndim = len(K.int_shape(ab))
-    if ndim==0:
+    if ndim == 0:
         print('can not unstack with ndim=0')
-    elif ndim==2:
-        a = ab[0]
-        b = ab[1]
-    elif ndim==2:
-        a = ab[:,0]
-        b = ab[:,1]
-    elif ndim==3:
-        a = ab[:,:,0]
-        b = ab[:,:,1]
-    elif ndim==4:
-        a = ab[:,:,:,0]
-        b = ab[:,:,:,1]
-    elif ndim==5:
-        a = ab[:,:,:,:,0]
-        b = ab[:,:,:,:,1]
     else:
-        print('ndim >5 not yet implemented')
-    return a,b
+        a = ab[...,0]
+        b = ab[...,1]
+    return a, b
+
 
 def output_lambda(x,init_alpha=1.0, max_beta_value=5.0):
     """Elementwise (Lambda) computation of alpha and regularized beta.
