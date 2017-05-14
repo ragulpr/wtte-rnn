@@ -307,6 +307,50 @@ def df_to_padded_df(df, id_col='id', t_col='t', abs_time_col='dt'):
 
     return df
 
+def _align_padded(padded,align_right):
+    """aligns nan-padded temporal arrays to the right (align_right=True) or left.
+    """
+    padded = np.copy(padded)
+    
+    if len(padded.shape)==2:
+        # (n_seqs,n_timesteps)
+        seq_lengths = (False == np.isnan(padded)).sum(1)
+        is_flat = True
+        padded = np.expand_dims(padded,-1)
+    elif len(padded.shape)==3:
+        # (n_seqs,n_timesteps,n_features,..)
+        seq_lengths = (False == np.isnan(padded[:,:,0])).sum(1)
+        is_flat =False
+    else:
+        print 'not yet implemented'
+        # TODO 
+        
+    n_seqs = padded.shape[0]
+    n_timesteps = padded.shape[1]
+
+    if align_right:
+        for i in xrange(n_seqs):
+            n = seq_lengths[i]
+            if n>0:
+                padded[i,(n_timesteps-n):,:] = padded[i,:n,:]
+                padded[i,:(n_timesteps-n),:] = np.nan
+    else:
+        for i in xrange(n_seqs):
+            n = seq_lengths[i]
+            if n>0:
+                padded[i,:n,:] = padded[i,(n_timesteps-n):,:]
+                padded[i,n:,:] = np.nan
+                        
+    if is_flat:
+        padded = np.squeeze(padded)
+        
+    return padded
+
+def right_pad_to_left_pad(padded):
+    return _align_padded(padded,align_right= True)
+
+def left_pad_to_right_pad(padded):
+    return _align_padded(padded,align_right= False)
 
 def df_join_in_endtime(df, per_id_cols='id', abs_time_col='dt', abs_endtime=None, nanfill_val=np.nan):
     """
