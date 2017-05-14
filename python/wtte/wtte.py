@@ -19,7 +19,6 @@ def _keras_unstack_hack(ab):
         b = ab[..., 1]
     return a, b
 
-
 def output_lambda(x, init_alpha=1.0, max_beta_value=5.0):
     """Elementwise (Lambda) computation of alpha and regularized beta.
 
@@ -47,7 +46,7 @@ def output_lambda(x, init_alpha=1.0, max_beta_value=5.0):
 
         Args:
             x: tensor with last dimension having length 2
-                with x[-1][0] = alpha, x[-1][1] = beta
+                with x[...,0] = alpha, x[...,1] = beta
 
         Usage:
             model.add(Dense(2))
@@ -66,9 +65,7 @@ def output_lambda(x, init_alpha=1.0, max_beta_value=5.0):
         # assuming input is around 0.0
         _shift = np.log(m - 1.0)
 
-        # change scale to be approx unchanged
-        _div = 1.0 / m
-        b = K.sigmoid((b - _shift) * _div)
+        b = K.sigmoid(b - _shift)
     else:
         b = K.sigmoid(b)
 
