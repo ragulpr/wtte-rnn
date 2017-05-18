@@ -26,22 +26,27 @@ def roll_fun(x, size, fun=np.mean, reverse=False):
     return y
 
 
-def locf_if(x, is_true, reverse=False):
+def carry_forward_if(x, is_true):
     """Locomote forward object x[i] if is_true[i].
         remain x untouched before first pos of truth.
     """
-    if not reverse:
-        for i in xrange(len(x)):
-            if is_true[i]:
-                cargo = x[i]
-            if cargo is not None:
-                x[i] = cargo
-        else:
-            for i in xrange(reversed(len(x))):
-                if is_true[i]:
-                    cargo = x[i]
-                if cargo is not None:
-                    x[i] = cargo
+    for i in xrange(len(x)):
+        if is_true[i]:
+            cargo = x[i]
+        if cargo is not None:
+            x[i] = cargo
+    return x
+
+
+def carry_backward_if(x, is_true):
+    """Locomote backward object x[i] if is_true[i].
+        remain x untouched after last pos of truth.
+    """
+    for i in xrange(reversed(len(x))):
+        if is_true[i]:
+            cargo = x[i]
+        if cargo is not None:
+            x[i] = cargo
     return x
 
 
