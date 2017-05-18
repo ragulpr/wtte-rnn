@@ -1,17 +1,14 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import numpy as np
 import pandas as pd
 
 # TODO
 # - Proper tests of everything
-# - Leftpad instead of right-padding
 # - naming in general.
 # - be clearer about meaning of t_elapsed, t_ix and either (t)
-# Should this be object oriented?
-# Would look neat but currently been trying to keep a balance
-# of having inline-able utility functions readable by data-scientists
-# and translatable to other dataframe/vectorized languages.
-
-# Vector based operations
 
 
 def roll_fun(x, size, fun=np.mean, reverse=False):

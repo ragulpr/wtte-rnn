@@ -1,9 +1,11 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import numpy as np
 import pandas as pd
 
-from tte_util import get_tte, get_is_not_censored
-# Transforms
-
+from .tte_util import get_tte, get_is_not_censored
 
 def df_to_array(df, column_names, nanpad_right=True, return_lists=False, id_col='id', t_col='t'):
     """converts flat pandas df {id,t,col1,col2,..} to array indexed [id,t,col].
@@ -287,9 +289,9 @@ def df_to_padded_df(df, id_col='id', t_col='t', abs_time_col='dt'):
          Expands each id to have to contiguous t=0,1,2..,and fills 
          NaNs with 0.
     """
-    print 'warning: not tested/working'
+    print('warning: not tested/working')
     if abs_time_col in df.columns:
-        print abs_time_col, ' filled with 0s :TODO'
+        print(abs_time_col, ' filled with 0s :TODO')
 
     seq_lengths = df[[id_col, t_col]].groupby(
         id_col).aggregate('max')[t_col].values + 1
@@ -307,50 +309,54 @@ def df_to_padded_df(df, id_col='id', t_col='t', abs_time_col='dt'):
 
     return df
 
-def _align_padded(padded,align_right):
+
+def _align_padded(padded, align_right):
     """aligns nan-padded temporal arrays to the right (align_right=True) or left.
     """
     padded = np.copy(padded)
-    
-    if len(padded.shape)==2:
+
+    if len(padded.shape) == 2:
         # (n_seqs,n_timesteps)
         seq_lengths = (False == np.isnan(padded)).sum(1)
         is_flat = True
-        padded = np.expand_dims(padded,-1)
-    elif len(padded.shape)==3:
+        padded = np.expand_dims(padded, -1)
+    elif len(padded.shape) == 3:
         # (n_seqs,n_timesteps,n_features,..)
-        seq_lengths = (False == np.isnan(padded[:,:,0])).sum(1)
-        is_flat =False
+        seq_lengths = (False == np.isnan(padded[:, :, 0])).sum(1)
+        is_flat = False
     else:
-        print 'not yet implemented'
-        # TODO 
-        
+        print('not yet implemented')
+        # TODO
+
     n_seqs = padded.shape[0]
     n_timesteps = padded.shape[1]
 
     if align_right:
         for i in xrange(n_seqs):
             n = seq_lengths[i]
-            if n>0:
-                padded[i,(n_timesteps-n):,:] = padded[i,:n,:]
-                padded[i,:(n_timesteps-n),:] = np.nan
+            if n > 0:
+                padded[i, (n_timesteps - n):, :] = padded[i, :n, :]
+                padded[i, :(n_timesteps - n), :] = np.nan
     else:
         for i in xrange(n_seqs):
             n = seq_lengths[i]
-            if n>0:
-                padded[i,:n,:] = padded[i,(n_timesteps-n):,:]
-                padded[i,n:,:] = np.nan
-                        
+            if n > 0:
+                padded[i, :n, :] = padded[i, (n_timesteps - n):, :]
+                padded[i, n:, :] = np.nan
+
     if is_flat:
         padded = np.squeeze(padded)
-        
+
     return padded
 
+
 def right_pad_to_left_pad(padded):
-    return _align_padded(padded,align_right= True)
+    return _align_padded(padded, align_right=True)
+
 
 def left_pad_to_right_pad(padded):
-    return _align_padded(padded,align_right= False)
+    return _align_padded(padded, align_right=False)
+
 
 def df_join_in_endtime(df, per_id_cols='id', abs_time_col='dt', abs_endtime=None, nanfill_val=np.nan):
     """
@@ -462,7 +468,7 @@ def normalize_padded(padded, means=None, stds=None):
 
     stds = means.reshape([1, 1, n_features])
     if (stds < epsilon).any():
-        print 'warning. Constant cols: ', np.where((stds < epsilon).flatten())
+        print('warning. Constant cols: ', np.where((stds < epsilon).flatten()))
         stds[stds < epsilon] = 1.0
         # should be (small number)/1.0 as mean is subtracted.
         # Possible prob depending on machine err
