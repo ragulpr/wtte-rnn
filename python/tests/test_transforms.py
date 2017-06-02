@@ -6,7 +6,7 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from wtte.transforms import df_to_padded, padded_to_df, shift_discrete_padded_features
+from wtte.transforms import *
 
 
 def generate_random_df(n_seqs, max_seq_length):
@@ -91,3 +91,22 @@ def test_shift_discrete_padded_features():
     x_shifted = shift_discrete_padded_features(x, fill=0)
 
     np.testing.assert_array_equal(x_shifted, np.array([[[0], [1], [2]]]))
+
+
+def test_align_padded():
+    np.random.seed(1)
+    n_seqs = 10
+    max_seq_length = 10
+    ids = xrange(n_seqs)
+    df = generate_random_df(n_seqs, max_seq_length)
+
+    column_names = ['event', 'int_column', 'double_column']
+    dtypes = ['double', 'int', 'float']
+
+    padded = df_to_padded(df, column_names)
+
+    np.testing.assert_array_equal(
+        padded, left_pad_to_right_pad(right_pad_to_left_pad(padded)))
+    padded = np.copy(np.squeeze(padded))
+    np.testing.assert_array_equal(
+        padded, left_pad_to_right_pad(right_pad_to_left_pad(padded)))
