@@ -105,7 +105,7 @@ class conditional_excess():
         # conditional excess quantile
         # t+s : Pr(Y<t+s|y>t)=p
 
-        print 'not tested'
+        print('not tested')
         L = np.power((t + .0) / a, b)
 
         quantile = a * np.power(-np.log(1. - p) - L, 1. / b)
@@ -124,7 +124,7 @@ class conditional_excess():
         from scipy.special import gamma
         from scipy.special import gammainc
         # Regularized lower gamma
-        print 'not tested'
+        print('not tested')
 
         v = 1. + 1. / b
         gv = gamma(v)
