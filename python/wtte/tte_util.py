@@ -5,6 +5,11 @@ from __future__ import print_function
 import numpy as np
 import pandas as pd
 
+try:
+    xrange
+except NameError:
+    xrange = range
+
 # TODO
 # - Proper tests of everything
 # - naming in general.
@@ -113,7 +118,7 @@ def get_tte_continuous(is_event, t_elapsed):
             Last datpoints are right censored.
         Args:
             is_event : bolean array
-            t_elapsed : array same length as is_event 
+            t_elapsed : array same length as is_event
                 that supports vectorized subtraction
     """
     n = len(is_event)
@@ -144,13 +149,13 @@ def get_tse(is_event, t_elapsed=None):
 
         Inverse of tte. Safe to use as a feature.
         Always "continuous" method of calculating it.
-        tse >0 at time of event 
-            (if discrete we dont know about the event yet, if continuous 
+        tse >0 at time of event
+            (if discrete we dont know about the event yet, if continuous
             we know at record of event so superfluous to have tse=0)
         tse = 0 at first step
 
-        TODO reverse-indexing is pretty slow and ugly and not a 
-        helpful template for implementing in other languages. 
+        TODO reverse-indexing is pretty slow and ugly and not a
+        helpful template for implementing in other languages.
     """
     if t_elapsed is not None:
         t_elapsed = t_elapsed.max() - t_elapsed[::-1]

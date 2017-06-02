@@ -7,27 +7,32 @@ import pandas as pd
 
 from .tte_util import get_tte, get_is_not_censored
 
+try:
+    xrange
+except NameError:
+    xrange = range
+
 def df_to_array(df, column_names, nanpad_right=True, return_lists=False, id_col='id', t_col='t'):
     """converts flat pandas df {id,t,col1,col2,..} to array indexed [id,t,col].
 
     Args:
-        df (pandas df): dataframe with columns 
-            `id` (int), 
-            `t` (int) 
+        df (pandas df): dataframe with columns
+            `id` (int),
+            `t` (int)
             columns in `column_names` (str list)
         Where rows in df are the t'th row for a id. Think user and t'th action.
-        If `t` is a non-contiguous int vec per id then steps in between t's 
+        If `t` is a non-contiguous int vec per id then steps in between t's
         are padded with zeros. If nanpad_right sequences are np.nan-padded to max_seq_len
 
     Returns:
         (With seqlen the max value of `t` per id)
         `padded`:
         (if nanpad_right & !return_lists):
-            a numpy float array of dimension [n_seqs,max_seqlen,n_features] 
+            a numpy float array of dimension [n_seqs,max_seqlen,n_features]
         (if nanpad_right & return_lists):
-            n_seqs numpy float sub-arrays of dimension [max_seqlen,n_features] 
+            n_seqs numpy float sub-arrays of dimension [max_seqlen,n_features]
         (if !nanpad_right & return_lists):
-            n_seqs numpy float sub-arrays of dimension [seqlen,n_features] 
+            n_seqs numpy float sub-arrays of dimension [seqlen,n_features]
     """
 
     # df.sort_values(by=['id','t'], inplace=True)
@@ -84,7 +89,7 @@ def df_to_subarrays(df, column_names, id_col='id', t_col='t'):
 def padded_to_df(padded, column_names, dtypes, ids=None, id_col='id', t_col='t'):
     """takes padded numpy array and converts nonzero entries to pandas dataframe row.
 
-    Inverse to df_to_padded. 
+    Inverse to df_to_padded.
     TODO: Support mapping to non-contiguous t_col?
 
     Args:
@@ -94,13 +99,13 @@ def padded_to_df(padded, column_names, dtypes, ids=None, id_col='id', t_col='t')
         ids (list): (optional) the ids to attach to each sequence
 
     Returns:
-        df (pandas df): dataframe with column `id` (int), and 
+        df (pandas df): dataframe with column `id` (int), and
         `t` (int). A row in df is the t'th event for a id and has columns from column_names
     """
 
     def get_is_nonempty_mask(padded):
-        """ 
-        returns : 
+        """
+        returns :
             is_nonempty[i,j] : true if [i,j,:] has non-zero non-nan - entries or
             j is the start or endpoint of a sequence i
         """
@@ -164,7 +169,7 @@ def padded_to_timelines(padded, user_starttimes):
         currently only makes sense for discrete padded in between data.
         args:
             user_starttimes : datelike corresponding to entrypoint of user
-        # TODO : tests and return timestamp 
+        # TODO : tests and return timestamp
     """
     seq_lengths = (False == np.isnan(padded)).sum(1)
     user_starttimes = pd.to_datetime(user_starttimes)
@@ -286,7 +291,7 @@ def df_to_padded_df(df, id_col='id', t_col='t', abs_time_col='dt'):
          id, a column of id
          t,      a column of (user/sequence) timestep
          dt, TODO expand range
-         Expands each id to have to contiguous t=0,1,2..,and fills 
+         Expands each id to have to contiguous t=0,1,2..,and fills
          NaNs with 0.
     """
     print('warning: not tested/working')
@@ -363,16 +368,16 @@ def df_join_in_endtime(df, per_id_cols='id', abs_time_col='dt', abs_endtime=None
         Join in and fill an endtime of when we stopped observing non-events.
         TODO : Need tests. Bugprone. Converts to Float
 
-        Protip : If discrete time: filter away last interval (day) 
+        Protip : If discrete time: filter away last interval (day)
         upstream as measurements here may be incomplete, i.e if query is in
         middle of day (we are thus always looking at yesterdays data)
         Args:
             df : pandas datafrmae
-            per_id_cols : str or list of str identifying id and static features per id 
-            abs_time_col : str identifying the wall-clock column. 
+            per_id_cols : str or list of str identifying id and static features per id
+            abs_time_col : str identifying the wall-clock column.
             abs_endtime : type as df[abs_time_cols]). If none it's inferred.
         returns:
-            df : pandas dataframe with a value 
+            df : pandas dataframe with a value
     """
     assert 't' not in df.columns.values, 'define per-id time upstream'
 
@@ -401,7 +406,7 @@ def shift_discrete_padded_features(padded, fill=0):
         discrete case: "event = 1 if event happens today"
          at 2015-12-15 (00:00:00) we know n_commits..
         ..to 2015-12-14 (23.59:59)
-        If no event until 
+        If no event until
             2015-12-15 (23:59:59) then event = 0
          at 2015-12-15 (23:59:59)
 
@@ -413,7 +418,7 @@ def shift_discrete_padded_features(padded, fill=0):
          at 2015-12-15 (00:00:00)
 
         -> if_discrete we need to roll data intent as features to the right. Consider this:
-        As observed after the fact: 
+        As observed after the fact:
         event   : [0,1,0,0,1]
         feature : [0,1,2,3,4]
         ...features and and target at t generated at [t,t+1)!
@@ -422,10 +427,10 @@ def shift_discrete_padded_features(padded, fill=0):
         feature : [?,0,1,2,3,4] <- last timestep can predict but can't train
         ...features at t generated at [t-1,t), target at t generated at [t,t+1)!
           -> First timestep has no features (don't know what happened day before first day)
-                 fix: set it to 0 
+                 fix: set it to 0
           -> last timestep  has no target  (don't know what can happen today)
-                 fix: don't use it during training. 
-        Unfortunately it usually makes sense to decide on fill-value 
+                 fix: don't use it during training.
+        Unfortunately it usually makes sense to decide on fill-value
         after feature normalization so do it on padded values
     """
     padded = np.roll(padded, shift=1, axis=1)
@@ -436,7 +441,7 @@ def shift_discrete_padded_features(padded, fill=0):
 def normalize_padded(padded, means=None, stds=None):
     """ norm. by last dim of padded with norm.coef or get them.
 
-        TODO consider importing instead ex: 
+        TODO consider importing instead ex:
         from sklearn.preprocessing import StandardScaler, RobustScaler
         robust_scaler = RobustScaler()
         x_train = robust_scaler.fit_transform(x_train)

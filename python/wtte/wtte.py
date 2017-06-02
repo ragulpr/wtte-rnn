@@ -6,6 +6,11 @@ import numpy as np
 
 from keras import backend as K
 
+try:
+    xrange
+except NameError:
+    xrange = range
+
 
 def _keras_unstack_hack(ab):
     """Implements tf.unstack(y_true_keras, num=2, axis=-1).
@@ -23,22 +28,22 @@ def _keras_unstack_hack(ab):
 def output_lambda(x, init_alpha=1.0, max_beta_value=5.0, max_alpha_value=None):
     """Elementwise (Lambda) computation of alpha and regularized beta.
 
-        Alpha: 
-        (activation) 
-        Exponential units seems to give faster training than 
+        Alpha:
+        (activation)
+        Exponential units seems to give faster training than
         the original papers softplus units. Makes sense due to logarithmic
-        effect of change in alpha. 
-        (initialization) 
+        effect of change in alpha.
+        (initialization)
         To get faster training and fewer exploding gradients,
         initialize alpha to be around its scale when beta is around 1.0,
-        approx the expected value/mean of training tte. 
+        approx the expected value/mean of training tte.
         Because we're lazy we want the correct scale of output built
-        into the model so initialize implicitly; 
+        into the model so initialize implicitly;
         multiply assumed exp(0)=1 by scale factor `init_alpha`.
 
-        Beta: 
-        (activation) 
-        We want slow changes when beta-> 0 so Softplus made sense in the original 
+        Beta:
+        (activation)
+        We want slow changes when beta-> 0 so Softplus made sense in the original
         paper but we get similar effect with sigmoid. It also has nice features.
         (regularization) Use max_beta_value to implicitly regularize the model
         (initialization) Fixed to begin moving slowly around 1.0
@@ -86,7 +91,7 @@ def output_lambda(x, init_alpha=1.0, max_beta_value=5.0, max_alpha_value=None):
 
 class output_activation(object):
     """ Elementwise computation of alpha and regularized beta using keras.layers.Activation.
-        Wrapper 
+        Wrapper
 
         Usage:
             wtte_activation = wtte.output_activation(init_alpha=1.,
@@ -109,19 +114,19 @@ class output_activation(object):
 
 
 class loss(object):
-    """ Creates a keras WTTE-loss function. 
+    """ Creates a keras WTTE-loss function.
         If regularize is called, a penalty is added creating 'wall' that beta do not
-        want to pass over. This is not necessary with Sigmoid-beta activation. 
+        want to pass over. This is not necessary with Sigmoid-beta activation.
 
         With masking keras needs to access each loss-contribution individually. Therefore
-        we do not sum/reduce down to dim 1, instead a return tensor (with reduce_loss=False). 
+        we do not sum/reduce down to dim 1, instead a return tensor (with reduce_loss=False).
 
         Usage:
             loss = wtte.loss(kind='discrete').loss_function
-            model.compile(loss=loss, optimizer=RMSprop(lr=0.01))        
+            model.compile(loss=loss, optimizer=RMSprop(lr=0.01))
             And with masking:
             loss = wtte.loss(kind='discrete',reduce_loss=False).loss_function
-            model.compile(loss=loss, optimizer=RMSprop(lr=0.01),sample_weight_mode='temporal')        
+            model.compile(loss=loss, optimizer=RMSprop(lr=0.01),sample_weight_mode='temporal')
 
     """
 
@@ -164,7 +169,7 @@ class loss(object):
             return loglikelihoods
 
         def loglik_continuous_conditional_correction(y, u, a, b, epsilon=1e-35):
-            """Integrated conditional excess loss. 
+            """Integrated conditional excess loss.
                 Explanation TODO
             """
             ya = (y + epsilon) / a
