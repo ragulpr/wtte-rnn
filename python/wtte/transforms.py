@@ -361,7 +361,7 @@ def left_pad_to_right_pad(padded):
 def df_join_in_endtime(df, per_id_cols='id', abs_time_col='dt', abs_endtime=None, nanfill_val=np.nan):
     """
         Join in and fill an endtime of when we stopped observing non-events.
-        TODO : Need tests
+        TODO : Need tests. Bugprone. Converts to Float
 
         Protip : If discrete time: filter away last interval (day) 
         upstream as measurements here may be incomplete, i.e if query is in
