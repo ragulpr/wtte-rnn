@@ -20,7 +20,7 @@ def _keras_unstack_hack(ab):
     return a, b
 
 
-def output_lambda(x, init_alpha=1.0, max_beta_value=5.0):
+def output_lambda(x, init_alpha=1.0, max_beta_value=5.0, max_alpha_value=None):
     """Elementwise (Lambda) computation of alpha and regularized beta.
 
         Alpha: 
@@ -58,7 +58,11 @@ def output_lambda(x, init_alpha=1.0, max_beta_value=5.0):
     a, b = _keras_unstack_hack(x)
 
     # Implicitly initialize alpha:
-    a = init_alpha * K.exp(a)
+    if max_alpha_value is None:
+        a = init_alpha * K.exp(a)
+    else:
+        a = init_alpha * K.clip(x=a, min_value=K.epsilon(),
+                                max_value=max_alpha_value)
 
     m = max_beta_value
     if m > 1.05:  # some value >>1.0
