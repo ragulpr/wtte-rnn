@@ -1,3 +1,8 @@
+try:
+    xrange
+except NameError:
+    xrange = range
+
 def weibull_contour(Y, U, is_discrete, true_alpha, true_beta, logx=True, samples=200, lines=True):
 
     xlist = np.linspace(true_alpha / np.e, true_alpha * np.e, samples)
