@@ -1,4 +1,5 @@
 language: python
+
 python:
   - "2.6"
   - "2.7"
@@ -11,8 +12,12 @@ python:
   - "3.6-dev" # 3.6 development branch
   - "3.7-dev" # 3.7 development branch
   - "nightly" # currently points to 3.7-dev
+
 # command to install dependencies
-install: "pip install -r python/requirements-dev.txt && pip install ./python"
+install: 
+  - pip install -r python/requirements-dev.txt
+  - pip install ./python"
+
 # command to run tests
 script: pytest
 
