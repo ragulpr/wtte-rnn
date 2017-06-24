@@ -16,7 +16,7 @@ python:
 # command to install dependencies
 install: 
   - pip install -r python/requirements-dev.txt
-  - pip install ./python"
+  - pip install ./python/
 
 # command to run tests
 script: pytest
