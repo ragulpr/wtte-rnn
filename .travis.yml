@@ -13,9 +13,12 @@ python:
   - "3.7-dev" # 3.7 development branch
   - "nightly" # currently points to 3.7-dev
 
+#upgrade pip
+before_install:
+    pip install --upgrade pip
+
 # command to install dependencies
-install: 
-  - pip install -r python/requirements-dev.txt
+install:
   - pip install ./python/
 
 # command to run tests
