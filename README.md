@@ -1,4 +1,7 @@
 # WTTE-RNN
+
+[![Build Status](https://travis-ci.org/ragulpr/wtte-rnn.svg?branch=master)](https://travis-ci.org/ragulpr/wtte-rnn)
+
 Weibull Time To Event Reccurent Neural Network
 
 A less hacky machine-learning framework for churn- and time to event prediction. Forecasting problems as diverse as server monitoring to earthquake- and churn-prediction can be posed as the problem of predicting the time to an event. WTTE-RNN is an algorithm and a philosophy about how this should be done. 
