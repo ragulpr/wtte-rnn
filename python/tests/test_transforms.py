@@ -6,13 +6,16 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from wtte.transforms import *
+from wtte.transforms import df_to_padded
+from wtte.transforms import padded_to_df
+from wtte.transforms import shift_discrete_padded_features
+from wtte.transforms import left_pad_to_right_pad
+from wtte.transforms import right_pad_to_left_pad
 
 try:
     xrange
 except NameError:
     xrange = range
-
 
 def generate_random_df(n_seqs, max_seq_length):
     """ generates random dataframe for testing.
@@ -21,7 +24,7 @@ def generate_random_df(n_seqs, max_seq_length):
     seq_lengths = np.random.randint(max_seq_length, size=n_seqs) + 1
     t_list = []
     id_list = []
-    dt_list = []
+    # dt_list = []
 
     for s in xrange(n_seqs):
         random_length = np.sort(np.random.choice(
@@ -37,12 +40,12 @@ def generate_random_df(n_seqs, max_seq_length):
         t = np.sort(t)
 
         t_list.append(t)
-#        dt_list.append(max_seq_length-seq_lengths[s]+ t)
+        # dt_list.append(max_seq_length-seq_lengths[s]+ t)
         id_list.append(np.repeat(s, repeats=len(t)))
 
     id_column = [item for sublist in id_list for item in sublist]
     t_column = [item for sublist in t_list for item in sublist]
- #   dt_column      = [item for sublist in dt_list for item in sublist]
+    # dt_column      = [item for sublist in dt_list for item in sublist]
 
     # do not assume row indicates event!
     event_column = np.random.randint(2, size=len(t_column))
@@ -58,8 +61,11 @@ def generate_random_df(n_seqs, max_seq_length):
                        })
 
 #    df['dt']=df.groupby(['id'], group_keys=False).apply(lambda g: g.t.max())
+    # this absolute time column dt permits some overlap per timestep
     df = df.assign(dt=10 * df.id + df.t)
-    df = df[['id', 't', 'dt', 'event', 'int_column', 'double_column']]
+
+    column_names = ['id', 't', 'dt', 'event', 'int_column', 'double_column']
+    df = df[column_names]
     return df
 
 
@@ -106,11 +112,9 @@ def test_align_padded():
     np.random.seed(1)
     n_seqs = 10
     max_seq_length = 10
-    ids = xrange(n_seqs)
     df = generate_random_df(n_seqs, max_seq_length)
 
     column_names = ['event', 'int_column', 'double_column']
-    dtypes = ['double', 'int', 'float']
 
     padded = df_to_padded(df, column_names)
 
