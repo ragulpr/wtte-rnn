@@ -310,38 +310,47 @@ def left_pad_to_right_pad(padded):
     return _align_padded(padded, align_right=False)
 
 
-def df_join_in_endtime(df, per_id_cols='id', abs_time_col='dt', abs_endtime=None, nanfill_val=np.nan):
+def df_join_in_endtime(df, constant_per_id_cols='id', 
+                       abs_time_col='dt', 
+                       abs_endtime=None):
     """
-        Join in and fill an endtime of when we stopped observing non-events.
-        TODO : Need tests. Bugprone. Converts to Float
+        Join in NaN-rows at timestep of when we stopped observing non-events.
 
-        Protip : If discrete time: filter away last interval (day)
+        If we have a dataset consisting of events recorded until a fixed
+        timestamp, that timestamp won't show up in the dataset (it's a non-event).
+        By joining in a row with NaN data at `abs_endtime` we get a boundarytime
+        for each sequence used for TTE-calculation and padding.
+
+        This is simpler in SQL where you join `on df.dt <= df_last_timestamp.dt`
+
+        Protip : If discrete time: filter away last interval (ex day)
         upstream as measurements here may be incomplete, i.e if query is in
         middle of day (we are thus always looking at yesterdays data)
         Args:
-            df : pandas datafrmae
-            per_id_cols : str or list of str identifying id and static features per id
+            df : pandas dataframe
+            constant_per_id_cols : str or list of str identifying id and
+                                   columns remaining constant per id&timestep
             abs_time_col : str identifying the wall-clock column.
             abs_endtime : type as df[abs_time_cols]). If none it's inferred.
         returns:
             df : pandas dataframe with a value
     """
-    assert 't' not in df.columns.values, 'define per-id time upstream'
+    assert 't' not in df.columns.values, 'define elapsed time upstream'
 
-    if isinstance(per_id_cols, basestring):
-        per_id_cols = [per_id_cols]
+    if type(constant_per_id_cols) is not list:
+        constant_per_id_cols = [constant_per_id_cols]
 
     if abs_endtime is None:
         abs_endtime = df[abs_time_col].max()
 
-    df_ids = df[per_id_cols].drop_duplicates()
+    df_ids = df[constant_per_id_cols].drop_duplicates()
 
     df_ids[abs_time_col] = abs_endtime
 
     df = pd.merge(df_ids, df, how='outer')
 
-    df.sort_values(by=[per_id_cols[0], abs_time_col], inplace=True)
-    df = df.fillna(nanfill_val)
+    df = df.sort_values(by=[constant_per_id_cols[0], abs_time_col])
+
     return df
 
 
