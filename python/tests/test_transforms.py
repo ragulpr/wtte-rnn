@@ -75,18 +75,22 @@ def test_df_to_padded_padded_to_df():
     n_seqs = 100
     max_seq_length = 100
     ids = xrange(n_seqs)
+
     df = generate_random_df(n_seqs, max_seq_length)
+    df = df.reset_index(drop=True)
 
+    # Column names to transform to tensor
     column_names = ['event', 'int_column', 'double_column']
-    dtypes = ['double', 'int', 'float']
-
+    dtypes = df[column_names].dtypes.values
     padded = df_to_padded(df, column_names)
 
     df_new = padded_to_df(padded, column_names, dtypes, ids=ids)
 
-    assert False not in (
-        df[['id', 't', 'event', 'int_column', 'double_column']].values == df_new.values)[0],\
-        'test_df_to_padded_padded_to_df failed'
+    column_names = ['id', 't', 'event', 'int_column', 'double_column']
+
+    # Pandas is awful. Index changes when slicing
+    df = df[column_names].reset_index(drop=True)
+    pd.util.testing.assert_frame_equal(df[column_names], df_new)
 
 
 def test_shift_discrete_padded_features():
