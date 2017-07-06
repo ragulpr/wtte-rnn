@@ -164,59 +164,6 @@ def padded_to_df(padded, column_names, dtypes, ids=None, id_col='id', t_col='t')
     return df_new
 
 
-def padded_to_timelines(padded, user_starttimes):
-    """ embeds padded events on a fixed timeline
-        currently only makes sense for discrete padded in between data.
-        args:
-            user_starttimes : datelike corresponding to entrypoint of user
-        # TODO : tests and return timestamp
-    """
-    seq_lengths = (False == np.isnan(padded)).sum(1)
-    user_starttimes = pd.to_datetime(user_starttimes)
-    timeline_start = user_starttimes.min()
-    timeline_end = timeline_start + pd.DateOffset(seq_lengths.max())
-
-    user_start_int = user_starttimes - timeline_start
-    user_start_int = user_start_int.dt.components.ix[
-        :, 0].values  # infer first component
-
-    # Sort to get stepwise entry onto timeline
-    m = user_start_int.argsort()
-    sl_sorted = seq_lengths[m]
-    user_start_int = user_start_int[m]
-    padded = padded[m, :]
-    user_starttimes = user_starttimes[m]
-
-    n_timesteps = (user_start_int + sl_sorted).max().astype(int)
-
-    n_seqs = len(user_start_int)
-    padded_timelines = np.zeros([n_seqs, n_timesteps])
-    padded_timelines[:, :] = np.nan
-
-    for s in xrange(n_seqs):
-        user_end_int = user_start_int[s] + sl_sorted[s]
-
-        padded_timelines[s, user_start_int[s]
-            :user_end_int] = padded[s, :sl_sorted[s]]
-    return padded_timelines, timeline_start, timeline_end
-
-
-def plot_timeline(padded_timelines, title='events'):
-    import matplotlib.pyplot as plt
-    # TODO dates on x-lab
-    fig, ax = plt.subplots()
-
-    ax.imshow(padded_timelines, interpolation='none',
-              aspect='auto', cmap='Greys')
-    ax.set_title(title)
-    ax.set_ylabel('nth user')
-    ax.set_xlabel('t')
-    fig.gca().invert_yaxis()
-    return fig, ax
-
-# Calculation
-
-
 def padded_events_to_tte(events, discrete_time, t_elapsed=None):
     """ computes (right censored) time to event from padded binary events.
     """
