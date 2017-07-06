@@ -1,3 +1,12 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+from wtte import weibull
+
 try:
     xrange
 except NameError:
@@ -10,14 +19,15 @@ def weibull_contour(Y, U, is_discrete, true_alpha, true_beta, logx=True, samples
     x_grid, y_grid = np.meshgrid(xlist, ylist)
 
     loglik = x_grid * 0
+
     if is_discrete:
-        for i in xrange(len(Y)):
-            loglik = loglik + \
-                weibull_discrete_logLik(Y[i], x_grid, y_grid, U[i])
+        fun = weibull.discrete_loglik
     else:
-        for i in xrange(len(Y)):
-            loglik = loglik + \
-                weibull_continuous_logLik(Y[i], x_grid, y_grid, U[i])
+        fun = weibull.continuous_loglik
+
+    for i in xrange(len(Y)):
+        loglik = loglik + \
+            fun(Y[i], x_grid, y_grid, U[i])
 
     z_grid = loglik / len(Y)
 
