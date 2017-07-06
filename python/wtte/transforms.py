@@ -364,7 +364,8 @@ def shift_discrete_padded_features(padded, fill=0):
             2015-12-15 (00:00:00) then event = 0
          at 2015-12-15 (00:00:00)
 
-        -> if_discrete we need to roll data intent as features to the right. Consider this:
+        -> if_discrete we need to roll data intent as features to the right.
+        Consider this:
         As observed after the fact:
         event   : [0,1,0,0,1]
         feature : [0,1,2,3,4]
@@ -388,13 +389,15 @@ def shift_discrete_padded_features(padded, fill=0):
 def normalize_padded(padded, means=None, stds=None):
     """ norm. by last dim of padded with norm.coef or get them.
 
-        TODO consider importing instead ex:
-        from sklearn.preprocessing import StandardScaler, RobustScaler
-        robust_scaler = RobustScaler()
-        x_train = robust_scaler.fit_transform(x_train)
-        x_test  = robust_scaler.transform(x_test)
-        ValueError: Found array with dim 3. RobustScaler expected <= 2.
-
+        TODO consider importing instead ex: 
+            from sklearn.preprocessing import StandardScaler, RobustScaler
+            robust_scaler = RobustScaler()
+            x_train = robust_scaler.fit_transform(x_train)
+            x_test  = robust_scaler.transform(x_test)
+            ValueError: Found array with dim 3. RobustScaler expected <= 2.
+        TODO 
+            - Don't normalize binary features
+            - If events are sparse then this may lead to huge values.
     """
     # TODO epsilon choice is random
     epsilon = 1e-8
