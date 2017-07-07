@@ -13,7 +13,7 @@ def loglik_continuous(a, b, y_, u_, output_collection=(), name=None):
     Args:
         a:  alpha. Positive nonzero `Tensor` of type `float32`, `float64`.
         b:  beta.  Positive nonzero `Tensor` of type `float32`, `float64`.
-        y_: time to event. Positive  nonzero `Tensor` of type `float32`, 
+        y_: time to event. Positive  nonzero `Tensor` of type `float32`,
             `float64`.
         u_: indicator 0.0 if right censored, 1.0 if uncensored
             `Tensor` of type `float32`, `float64`.

@@ -2,17 +2,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import numpy as np
-from six.moves import xrange
-
 from keras import backend as K
+import numpy as np
 
 
 def _keras_unstack_hack(ab):
     """Implements tf.unstack(y_true_keras, num=2, axis=-1).
 
        Keras-hack adopted to be compatible with Theano backend.
-       
+
        :param ab: stacked variables
        :return a, b: unstacked variables
     """
@@ -101,10 +99,10 @@ class output_activation(object):
             :Example:
 
             .. code-block:: python
-            
+
                wtte_activation = wtte.output_activation(init_alpha=1.,
                                                  max_beta_value=4.0).activation
-    
+
                model.add(Dense(2))
                model.add(Activation(wtte_activation))
 
@@ -134,7 +132,7 @@ class loss(object):
             .. code-block:: python
                loss = wtte.loss(kind='discrete').loss_function
                model.compile(loss=loss, optimizer=RMSprop(lr=0.01))
-               
+
                # And with masking:
                loss = wtte.loss(kind='discrete',reduce_loss=False).loss_function
                model.compile(loss=loss, optimizer=RMSprop(lr=0.01),

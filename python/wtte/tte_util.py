@@ -3,7 +3,6 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-import pandas as pd
 from six.moves import xrange
 
 # TODO
@@ -30,7 +29,7 @@ def roll_fun(x, size, fun=np.mean, reverse=False):
 def carry_forward_if(x, is_true):
     """Locomote forward object x[i] if is_true[i].
         remain x untouched before first pos of truth.
-        
+
         :param Array x: forward object x
         :param Array is_true: array containing true/false boolean index.
         :return Array x:forward object x
@@ -61,8 +60,8 @@ def carry_backward_if(x, is_true):
 
 def steps_since_true_minimal(is_event):
     """(Time) since event over discrete (padded) events.
-    
-        :param Array is_event:  
+
+        :param Array is_event:
     """
     n = len(is_event)
     z = -1  # at the latest on step before
@@ -76,7 +75,7 @@ def steps_since_true_minimal(is_event):
 
 def steps_to_true_minimal(is_event):
     """(Time) to event for discrete (padded) events.
-    
+
         :param Array is_event:
         :return Array x:
     """
@@ -102,7 +101,7 @@ def get_tte_discrete(is_event, t_elapsed=None):
             tte[i] = numb. timesteps to timestep with event
             Step of event has tte = 0
            (event happened at time [t,t+1))
-            tte[-1]=1 if no event (censored data)    
+            tte[-1]=1 if no event (censored data)
     """
     n = len(is_event)
     tte = np.int32(is_event)
@@ -123,7 +122,7 @@ def get_tte_continuous(is_event, t_elapsed):
 
         :param Array is_event: Boolean array
         :param IntArray t_elapsed: integer array with same length as `is_event` that supports vectorized subtraction. If none, it will use `xrange(len(is_event))`
-        :return Array tte: Time-to-event (continuous version) 
+        :return Array tte: Time-to-event (continuous version)
 
         .. Caveats::
             tte[i] = time to *next* event at time t[i]
@@ -182,7 +181,7 @@ def get_tse(is_event, t_elapsed=None):
 
 def get_is_not_censored(is_event, discrete_time=True):
     """ Calculates non-censoring indicator u
-        
+
         :param Boolean discrete_time: if `True`, last observation is conditionally censored.
     """
     n = len(is_event)

@@ -15,7 +15,7 @@ def df_to_array(df, column_names, nanpad_right=True, return_lists=False, id_col=
     :param df: dataframe with columns
       * `id`: integer
       * `t`: integer
-      * `columns` in `column_names (String list) 
+      * `columns` in `column_names (String list)
         Where rows in df are the t'th row for a id. Think user and t'th action.
         If `t` is a non-contiguous int vec per id then steps in between t's
         are padded with zeros.
@@ -99,13 +99,13 @@ def padded_to_df(padded, column_names, dtypes, ids=None, id_col='id', t_col='t')
     :param t_col: Column where `t` is located. Default value is `t`.
     :return df: Dataframe with Columns
       *  `id` (Integer)
-      * `t` (Integer). 
+      * `t` (Integer).
       A row in df is the t'th event for a `id` and has columns from `column_names`
     """
 
     def get_is_nonempty_mask(padded):
         """ (internal function) Non-empty masks
-        
+
         :return is_nonempty: True if `[i,j,:]` has non-zero non-nan - entries or
             j is the start or endpoint of a sequence i
         :type is_nonempty: Boolean Array
@@ -126,7 +126,7 @@ def padded_to_df(padded, column_names, dtypes, ids=None, id_col='id', t_col='t')
 
     def get_basic_df(padded, is_nonempty, ids):
         """ (internal function) Get basic dataframe
-        
+
         :return df: Dataframe with columns
           * `id`: a column of id
           * `t`: a column of (user/sequence) timestep
@@ -167,9 +167,9 @@ def padded_to_df(padded, column_names, dtypes, ids=None, id_col='id', t_col='t')
 
 def padded_events_to_tte(events, discrete_time, t_elapsed=None):
     """ computes (right censored) time to event from padded binary events.
-    
+
     :param Array events: Events array.
-    :param Boolean discrete_time: `True` when applying discrete time scheme. 
+    :param Boolean discrete_time: `True` when applying discrete time scheme.
     :param Array t_elapsed: Elapsed time. Default value is `None`.
     :return Array time_to_events: Time-to-event tensor.
     """
@@ -270,7 +270,7 @@ def df_to_padded_df(df, id_col='id', t_col='t', abs_time_col='dt'):
 
 def _align_padded(padded, align_right):
     """ (Internal function) Aligns nan-padded temporal arrays to the right (align_right=True) or left.
-    
+
     :param Array padded: padded array
     :param align_right: Determines padding orientation (right or left). If `True`, pads to right direction.
     """
@@ -333,11 +333,11 @@ def df_join_in_endtime(df, constant_per_id_cols='id',
 
         This is simpler in SQL where you join `on df.dt <= df_last_timestamp.dt`
 
-        .. Protip:: 
+        .. Protip::
             If discrete time: filter away last interval (ex day)
             upstream as measurements here may be incomplete, i.e if query is in
             middle of day (we are thus always looking at yesterdays data)
-        
+
         :param pandas.dataframe df: Pandas dataframe
         :param constant_per_id_cols: identifying id and
                                    columns remaining constant per id&timestep
@@ -397,7 +397,7 @@ def shift_discrete_padded_features(padded, fill=0):
                 event   : [0,1,0,0,1]
                 feature : [0,1,2,3,4]
             features and and target at t generated at [t,t+1)!
-            
+
             As observed in realtime and what to feed to model
                 event   : [0,1,0,0,1,?]
                 feature : [?,0,1,2,3,4] <- last timestep can predict but can't train
@@ -406,7 +406,7 @@ def shift_discrete_padded_features(padded, fill=0):
                      fix: set it to 0
               -> last timestep  has no target  (don't know what can happen today)
                      fix: don't use it during training.
-    
+
             Unfortunately it usually makes sense to decide on fill-value after feature normalization so do it on padded values
     """
     padded = np.roll(padded, shift=1, axis=1)
@@ -418,8 +418,8 @@ def normalize_padded(padded, means=None, stds=None):
     """ norm. by last dim of padded with norm.coef or get them.
 
         .. TODO::
-           * consider importing instead ex: 
-            
+           * consider importing instead ex:
+
                 from sklearn.preprocessing import StandardScaler, RobustScaler
                 robust_scaler = RobustScaler()
                 x_train = robust_scaler.fit_transform(x_train)
