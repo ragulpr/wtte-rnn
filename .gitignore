@@ -5,8 +5,8 @@
 *.ipynb_checkpoints
 python/build/
 python/dist/
-python/\.egg-info/
-python/\.eggs/
+*.egg-info/
+*.eggs/
 __pycache__/
 *.pyc
 *.pyo
