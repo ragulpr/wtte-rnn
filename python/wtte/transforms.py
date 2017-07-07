@@ -173,7 +173,7 @@ def padded_events_to_tte(events, discrete_time, t_elapsed=None):
     :param Array t_elapsed: Elapsed time. Default value is `None`.
     :return Array time_to_events: Time-to-event tensor.
     """
-    seq_lengths = (False == np.isnan(events)).sum(1)
+    seq_lengths = np.count_nonzero(~np.isnan(events), axis=1)
     n_seqs = len(events)
 
     times_to_event = np.zeros_like(events)
@@ -201,7 +201,7 @@ def padded_events_to_not_censored_vectorized(events):
         calculates (non) right-censoring indicators from padded binary events
     """
     not_censored = np.zeros_like(events)
-    not_censored[np.isnan(events) == False] = events[np.isnan(events) == False]
+    not_censored[~np.isnan(events)] = events[~np.isnan(events)]
     # 0100 -> 0010 -> 0011 -> 1100
     not_censored = not_censored[:, ::-1].cumsum(1)[:, ::-1]
 
@@ -214,7 +214,7 @@ def padded_events_to_not_censored_vectorized(events):
 
 
 def padded_events_to_not_censored(events, discrete_time):
-    seq_lengths = (False == np.isnan(events)).sum(1)
+    seq_lengths = np.count_nonzero(~np.isnan(events), axis=1)
     n_seqs = events.shape[0]
     is_not_censored = np.copy(events)
 
@@ -278,12 +278,12 @@ def _align_padded(padded, align_right):
 
     if len(padded.shape) == 2:
         # (n_seqs,n_timesteps)
-        seq_lengths = (False == np.isnan(padded)).sum(1)
+        seq_lengths = np.count_nonzero(~np.isnan(padded), axis=1)
         is_flat = True
         padded = np.expand_dims(padded, -1)
     elif len(padded.shape) == 3:
         # (n_seqs,n_timesteps,n_features,..)
-        seq_lengths = (False == np.isnan(padded[:, :, 0])).sum(1)
+        seq_lengths = np.count_nonzero(~np.isnan(padded[:, :, 0]), axis=1)
         is_flat = False
     else:
         print('not yet implemented')
