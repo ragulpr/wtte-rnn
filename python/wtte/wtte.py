@@ -10,7 +10,11 @@ from keras import backend as K
 
 def _keras_unstack_hack(ab):
     """Implements tf.unstack(y_true_keras, num=2, axis=-1).
-       Keras-hack adopted to be compatible with theano backend.
+
+       Keras-hack adopted to be compatible with Theano backend.
+       
+       :param ab: stacked variables
+       :return a, b: unstacked variables
     """
     ndim = len(K.int_shape(ab))
     if ndim == 0:
@@ -24,39 +28,40 @@ def _keras_unstack_hack(ab):
 def output_lambda(x, init_alpha=1.0, max_beta_value=5.0, max_alpha_value=None):
     """Elementwise (Lambda) computation of alpha and regularized beta.
 
-        Alpha:
-        (activation)
-        Exponential units seems to give faster training than
-        the original papers softplus units. Makes sense due to logarithmic
-        effect of change in alpha.
-        (initialization)
-        To get faster training and fewer exploding gradients,
-        initialize alpha to be around its scale when beta is around 1.0,
-        approx the expected value/mean of training tte.
-        Because we're lazy we want the correct scale of output built
-        into the model so initialize implicitly;
-        multiply assumed exp(0)=1 by scale factor `init_alpha`.
+        - Alpha:
+            (activation)
+            Exponential units seems to give faster training than
+            the original papers softplus units. Makes sense due to logarithmic
+            effect of change in alpha.
+            (initialization)
+            To get faster training and fewer exploding gradients,
+            initialize alpha to be around its scale when beta is around 1.0,
+            approx the expected value/mean of training tte.
+            Because we're lazy we want the correct scale of output built
+            into the model so initialize implicitly;
+            multiply assumed exp(0)=1 by scale factor `init_alpha`.
 
-        Beta:
-        (activation)
-        We want slow changes when beta-> 0 so Softplus made sense in the original
-        paper but we get similar effect with sigmoid. It also has nice features.
-        (regularization) Use max_beta_value to implicitly regularize the model
-        (initialization) Fixed to begin moving slowly around 1.0
+        - Beta:
+
+            (activation)
+            We want slow changes when beta-> 0 so Softplus made sense in the original
+            paper but we get similar effect with sigmoid. It also has nice features.
+            (regularization) Use max_beta_value to implicitly regularize the model
+            (initialization) Fixed to begin moving slowly around 1.0
 
         Assumes tensorflow backend.
 
-        Args:
-            x: tensor with last dimension having length 2
-                with x[...,0] = alpha, x[...,1] = beta
+        :param x: tensor with last dimension having length 2 with x[...,0] = alpha, x[...,1] = beta
+        :param init_alpha: initial value of `alpha`. Default value is 1.0.
+        :param max_beta_value: maximum beta value. Default value is 5.0.
+        :param max_alpha_value: maxumum alpha value. Default is `None`.
+        :type x: Array
+        :type init_alpha: Integer
+        :type max_beta_value: Integer
+        :type max_alpha_value: Integer
+        :return x: A positive `Tensor` of same shape as input
+        :rtype: Array
 
-        Usage:
-            model.add(Dense(2))
-            model.add(Lambda(output_lambda,
-                             arguments={"init_alpha":100.,
-                                        "max_beta_value":2.0}))
-        Returns:
-            A positive `Tensor` of same shape as input
     """
     a, b = _keras_unstack_hack(x)
 
@@ -91,12 +96,17 @@ class output_activation(object):
     """ Elementwise computation of alpha and regularized beta using keras.layers.Activation.
         Wrapper
 
-        Usage:
-            wtte_activation = wtte.output_activation(init_alpha=1.,
-                                             max_beta_value=4.0).activation
+        - Usage
 
-            model.add(Dense(2))
-            model.add(Activation(wtte_activation))
+            :Example:
+
+            .. code-block:: python
+            
+               wtte_activation = wtte.output_activation(init_alpha=1.,
+                                                 max_beta_value=4.0).activation
+    
+               model.add(Dense(2))
+               model.add(Activation(wtte_activation))
 
     """
 
@@ -117,17 +127,24 @@ class loss(object):
         do not want to pass over. This is not necessary with Sigmoid-beta
         activation.
 
-        With masking keras needs to access each loss-contribution individually.
-        Therefore we do not sum/reduce down to dim 1, instead a return tensor
-        (with reduce_loss=False).
+        - Usage
 
-        Usage:
-            loss = wtte.loss(kind='discrete').loss_function
-            model.compile(loss=loss, optimizer=RMSprop(lr=0.01))
-            And with masking:
-            loss = wtte.loss(kind='discrete',reduce_loss=False).loss_function
-            model.compile(loss=loss, optimizer=RMSprop(lr=0.01),
-                          sample_weight_mode='temporal')
+            :Example:
+
+            .. code-block:: python
+               loss = wtte.loss(kind='discrete').loss_function
+               model.compile(loss=loss, optimizer=RMSprop(lr=0.01))
+               
+               # And with masking:
+               loss = wtte.loss(kind='discrete',reduce_loss=False).loss_function
+               model.compile(loss=loss, optimizer=RMSprop(lr=0.01),
+                              sample_weight_mode='temporal')
+
+        .. note::
+
+            With masking keras needs to access each loss-contribution individually.
+            Therefore we do not sum/reduce down to dim 1, instead a return tensor
+            (with reduce_loss=False).
 
     """
 

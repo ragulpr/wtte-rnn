@@ -10,5 +10,14 @@ python/dist/
 __pycache__/
 *.pyc
 *.pyo
-python/venv*/
 .*.swp
+
+# virtualenv
+python/venv*/
+wtte-rnn-env
+
+# sphinx-docs related files
+docs/_build/
+docs/*.rst
+docs/_templates/
+docs/_static/

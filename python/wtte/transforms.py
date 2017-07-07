@@ -10,26 +10,27 @@ from .tte_util import get_tte, get_is_not_censored
 
 
 def df_to_array(df, column_names, nanpad_right=True, return_lists=False, id_col='id', t_col='t'):
-    """converts flat pandas df {id,t,col1,col2,..} to array indexed [id,t,col].
+    """ converts flat pandas df `{id,t,col1,col2,..}` to array indexed `[id,t,col]`.
 
-    Args:
-        df (pandas df): dataframe with columns
-            `id` (int),
-            `t` (int)
-            columns in `column_names` (str list)
+    :param df: dataframe with columns
+      * `id`: integer
+      * `t`: integer
+      * `columns` in `column_names (String list) 
         Where rows in df are the t'th row for a id. Think user and t'th action.
         If `t` is a non-contiguous int vec per id then steps in between t's
-        are padded with zeros. If nanpad_right sequences are np.nan-padded to max_seq_len
-
-    Returns:
-        (With seqlen the max value of `t` per id)
-        `padded`:
-        (if nanpad_right & !return_lists):
-            a numpy float array of dimension [n_seqs,max_seqlen,n_features]
-        (if nanpad_right & return_lists):
-            n_seqs numpy float sub-arrays of dimension [max_seqlen,n_features]
-        (if !nanpad_right & return_lists):
-            n_seqs numpy float sub-arrays of dimension [seqlen,n_features]
+        are padded with zeros.
+    :type df: Pandas dataframe
+    :param Boolean nanpad_right: If `True`,  sequences are `np.nan-padded` to `max_seq_len`
+    :param return_lists:
+    :param_id_col: Column where `id` is located
+    :param t_col: Column where `t` is located
+    :return padded: With seqlen the max value of `t` per id
+      * if nanpad_right & !return_lists):
+        a numpy float array of dimension `[n_seqs,max_seqlen,n_features]`
+      * if nanpad_right & return_lists):
+        n_seqs numpy float sub-arrays of dimension `[max_seqlen,n_features]`
+      * if !nanpad_right & return_lists):
+        n_seqs numpy float sub-arrays of dimension `[seqlen,n_features]`
     """
 
     # df.sort_values(by=['id','t'], inplace=True)
@@ -89,22 +90,25 @@ def padded_to_df(padded, column_names, dtypes, ids=None, id_col='id', t_col='t')
     Inverse to df_to_padded.
     TODO: Support mapping to non-contiguous t_col?
 
-    Args:
-        padded: a numpy float array of dimension [n_seqs,max_seqlen,n_features].
-        column_names (str list): other columns to expand from df
-        dtypes (str list): the type to cast the float-entries to.
-        ids (list): (optional) the ids to attach to each sequence
-
-    Returns:
-        df (pandas df): dataframe with column `id` (int), and
-        `t` (int). A row in df is the t'th event for a id and has columns from column_names
+    :param padded: a numpy float array of dimension `[n_seqs,max_seqlen,n_features]`.
+    :param column_names: other columns to expand from df
+    :param dtypes:  the type to cast the float-entries to.
+    :type dtypes: String list
+    :param ids: (optional) the ids to attach to each sequence
+    :param id_col: Column where `id` is located. Default value is `id`.
+    :param t_col: Column where `t` is located. Default value is `t`.
+    :return df: Dataframe with Columns
+      *  `id` (Integer)
+      * `t` (Integer). 
+      A row in df is the t'th event for a `id` and has columns from `column_names`
     """
 
     def get_is_nonempty_mask(padded):
-        """
-        returns :
-            is_nonempty[i,j] : true if [i,j,:] has non-zero non-nan - entries or
+        """ (internal function) Non-empty masks
+        
+        :return is_nonempty: True if `[i,j,:]` has non-zero non-nan - entries or
             j is the start or endpoint of a sequence i
+        :type is_nonempty: Boolean Array
         """
         # If any nonzero element then nonempty:
         is_nonempty = (padded != 0).sum(2) != 0
@@ -121,11 +125,11 @@ def padded_to_df(padded, column_names, dtypes, ids=None, id_col='id', t_col='t')
         return is_nonempty
 
     def get_basic_df(padded, is_nonempty, ids):
-        """
-            returns :
-            df with column
-             id, a column of id
-             t,      a column of (user/sequence) timestep
+        """ (internal function) Get basic dataframe
+        
+        :return df: Dataframe with columns
+          * `id`: a column of id
+          * `t`: a column of (user/sequence) timestep
         """
         n_nonempty_steps = is_nonempty.sum(1)
         df = pd.DataFrame(index=xrange(sum(n_nonempty_steps)))
@@ -163,6 +167,11 @@ def padded_to_df(padded, column_names, dtypes, ids=None, id_col='id', t_col='t')
 
 def padded_events_to_tte(events, discrete_time, t_elapsed=None):
     """ computes (right censored) time to event from padded binary events.
+    
+    :param Array events: Events array.
+    :param Boolean discrete_time: `True` when applying discrete time scheme. 
+    :param Array t_elapsed: Elapsed time. Default value is `None`.
+    :return Array time_to_events: Time-to-event tensor.
     """
     seq_lengths = (False == np.isnan(events)).sum(1)
     n_seqs = len(events)
@@ -230,7 +239,7 @@ def padded_events_to_not_censored(events, discrete_time):
 
 
 def df_to_padded_df(df, id_col='id', t_col='t', abs_time_col='dt'):
-    """zeropadds a df between timesteps.
+    """ zeropads a df between timesteps.
         df with column
          id, a column of id
          t,      a column of (user/sequence) timestep
@@ -260,7 +269,10 @@ def df_to_padded_df(df, id_col='id', t_col='t', abs_time_col='dt'):
 
 
 def _align_padded(padded, align_right):
-    """aligns nan-padded temporal arrays to the right (align_right=True) or left.
+    """ (Internal function) Aligns nan-padded temporal arrays to the right (align_right=True) or left.
+    
+    :param Array padded: padded array
+    :param align_right: Determines padding orientation (right or left). If `True`, pads to right direction.
     """
     padded = np.copy(padded)
 
@@ -300,18 +312,19 @@ def _align_padded(padded, align_right):
 
 
 def right_pad_to_left_pad(padded):
+    """ Change right padded to left padded. """
     return _align_padded(padded, align_right=True)
 
 
 def left_pad_to_right_pad(padded):
+    """ Change left padded to right padded. """
     return _align_padded(padded, align_right=False)
 
 
 def df_join_in_endtime(df, constant_per_id_cols='id',
                        abs_time_col='dt',
                        abs_endtime=None):
-    """
-        Join in NaN-rows at timestep of when we stopped observing non-events.
+    """ Join in NaN-rows at timestep of when we stopped observing non-events.
 
         If we have a dataset consisting of events recorded until a fixed
         timestamp, that timestamp won't show up in the dataset (it's a non-event).
@@ -320,17 +333,18 @@ def df_join_in_endtime(df, constant_per_id_cols='id',
 
         This is simpler in SQL where you join `on df.dt <= df_last_timestamp.dt`
 
-        Protip : If discrete time: filter away last interval (ex day)
-        upstream as measurements here may be incomplete, i.e if query is in
-        middle of day (we are thus always looking at yesterdays data)
-        Args:
-            df : pandas dataframe
-            constant_per_id_cols : str or list of str identifying id and
+        .. Protip:: 
+            If discrete time: filter away last interval (ex day)
+            upstream as measurements here may be incomplete, i.e if query is in
+            middle of day (we are thus always looking at yesterdays data)
+        
+        :param pandas.dataframe df: Pandas dataframe
+        :param constant_per_id_cols: identifying id and
                                    columns remaining constant per id&timestep
-            abs_time_col : str identifying the wall-clock column.
-            abs_endtime : type as df[abs_time_cols]). If none it's inferred.
-        returns:
-            df : pandas dataframe with a value
+        :type constant_per_id_cols: String or String list
+        :param String abs_time_col: identifying the wall-clock column.
+        :param df[abs_time_cols]) abs_endtime: If none it's inferred.
+        :return pandas.dataframe df: pandas dataframe with a value
     """
     assert 't' not in df.columns.values, 'define elapsed time upstream'
 
@@ -352,40 +366,48 @@ def df_join_in_endtime(df, constant_per_id_cols='id',
 
 
 def shift_discrete_padded_features(padded, fill=0):
-    """
+    """ Shift discrete padded features.
+
         Feature cols : data available at timestamp
         Target  cols : not known at timestamp
 
-        discrete case: "event = 1 if event happens today"
-         at 2015-12-15 (00:00:00) we know n_commits..
-        ..to 2015-12-14 (23.59:59)
-        If no event until
-            2015-12-15 (23:59:59) then event = 0
-         at 2015-12-15 (23:59:59)
+        - discrete case
 
-        continuous case: "event =1 if event happens now"
-         at 2015-12-15 (00:00:00) we know n_commits..
-        ..to 2015-12-15 (00:00:00)
-        If no event at
-            2015-12-15 (00:00:00) then event = 0
-         at 2015-12-15 (00:00:00)
+            "event = 1 if event happens today"
+             at 2015-12-15 (00:00:00) we know n_commits..
+             to 2015-12-14 (23.59:59)
+            If no event until
+                2015-12-15 (23:59:59) then event = 0
+             at 2015-12-15 (23:59:59)
+
+        - continuous case
+
+            "event =1 if event happens now"
+             at 2015-12-15 (00:00:00) we know n_commits..
+             to 2015-12-15 (00:00:00)
+            If no event at
+                2015-12-15 (00:00:00) then event = 0
+             at 2015-12-15 (00:00:00)
 
         -> if_discrete we need to roll data intent as features to the right.
-        Consider this:
-        As observed after the fact:
-        event   : [0,1,0,0,1]
-        feature : [0,1,2,3,4]
-        ...features and and target at t generated at [t,t+1)!
-        As observed in realtime and what to feed to model:
-        event   : [0,1,0,0,1,?]
-        feature : [?,0,1,2,3,4] <- last timestep can predict but can't train
-        ...features at t generated at [t-1,t), target at t generated at [t,t+1)!
-          -> First timestep has no features (don't know what happened day before first day)
-                 fix: set it to 0
-          -> last timestep  has no target  (don't know what can happen today)
-                 fix: don't use it during training.
-        Unfortunately it usually makes sense to decide on fill-value
-        after feature normalization so do it on padded values
+
+        .. Note::
+            Consider this
+            As observed after the fact,
+                event   : [0,1,0,0,1]
+                feature : [0,1,2,3,4]
+            features and and target at t generated at [t,t+1)!
+            
+            As observed in realtime and what to feed to model
+                event   : [0,1,0,0,1,?]
+                feature : [?,0,1,2,3,4] <- last timestep can predict but can't train
+            features at t generated at [t-1,t), target at t generated at [t,t+1)!
+              -> First timestep has no features (don't know what happened day before first day)
+                     fix: set it to 0
+              -> last timestep  has no target  (don't know what can happen today)
+                     fix: don't use it during training.
+    
+            Unfortunately it usually makes sense to decide on fill-value after feature normalization so do it on padded values
     """
     padded = np.roll(padded, shift=1, axis=1)
     padded[:, 0] = fill
@@ -395,15 +417,17 @@ def shift_discrete_padded_features(padded, fill=0):
 def normalize_padded(padded, means=None, stds=None):
     """ norm. by last dim of padded with norm.coef or get them.
 
-        TODO consider importing instead ex:
-            from sklearn.preprocessing import StandardScaler, RobustScaler
-            robust_scaler = RobustScaler()
-            x_train = robust_scaler.fit_transform(x_train)
-            x_test  = robust_scaler.transform(x_test)
-            ValueError: Found array with dim 3. RobustScaler expected <= 2.
-        TODO 
-            - Don't normalize binary features
-            - If events are sparse then this may lead to huge values.
+        .. TODO::
+           * consider importing instead ex: 
+            
+                from sklearn.preprocessing import StandardScaler, RobustScaler
+                robust_scaler = RobustScaler()
+                x_train = robust_scaler.fit_transform(x_train)
+                x_test  = robust_scaler.transform(x_test)
+                ValueError: Found array with dim 3. RobustScaler expected <= 2.
+
+           * Don't normalize binary features
+           * If events are sparse then this may lead to huge values.
     """
     # TODO epsilon choice is random
     epsilon = 1e-8
