@@ -17,6 +17,7 @@ try:
 except NameError:
     xrange = range
 
+
 def generate_random_df(n_seqs, max_seq_length):
     """ generates random dataframe for testing.
     """

@@ -12,6 +12,7 @@ try:
 except NameError:
     xrange = range
 
+
 def df_to_array(df, column_names, nanpad_right=True, return_lists=False, id_col='id', t_col='t'):
     """converts flat pandas df {id,t,col1,col2,..} to array indexed [id,t,col].
 
@@ -310,8 +311,8 @@ def left_pad_to_right_pad(padded):
     return _align_padded(padded, align_right=False)
 
 
-def df_join_in_endtime(df, constant_per_id_cols='id', 
-                       abs_time_col='dt', 
+def df_join_in_endtime(df, constant_per_id_cols='id',
+                       abs_time_col='dt',
                        abs_endtime=None):
     """
         Join in NaN-rows at timestep of when we stopped observing non-events.

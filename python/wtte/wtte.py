@@ -56,7 +56,9 @@ def output_lambda(x, init_alpha=1.0, max_beta_value=5.0, max_alpha_value=None):
 
         Usage:
             model.add(Dense(2))
-            model.add(Lambda(output_lambda, arguments={"init_alpha":100., "max_beta_value":2.0}))
+            model.add(Lambda(output_lambda,
+                             arguments={"init_alpha":100.,
+                                        "max_beta_value":2.0}))
         Returns:
             A positive `Tensor` of same shape as input
     """
@@ -115,18 +117,21 @@ class output_activation(object):
 
 class loss(object):
     """ Creates a keras WTTE-loss function.
-        If regularize is called, a penalty is added creating 'wall' that beta do not
-        want to pass over. This is not necessary with Sigmoid-beta activation.
+        If regularize is called, a penalty is added creating 'wall' that beta
+        do not want to pass over. This is not necessary with Sigmoid-beta
+        activation.
 
-        With masking keras needs to access each loss-contribution individually. Therefore
-        we do not sum/reduce down to dim 1, instead a return tensor (with reduce_loss=False).
+        With masking keras needs to access each loss-contribution individually.
+        Therefore we do not sum/reduce down to dim 1, instead a return tensor
+        (with reduce_loss=False).
 
         Usage:
             loss = wtte.loss(kind='discrete').loss_function
             model.compile(loss=loss, optimizer=RMSprop(lr=0.01))
             And with masking:
             loss = wtte.loss(kind='discrete',reduce_loss=False).loss_function
-            model.compile(loss=loss, optimizer=RMSprop(lr=0.01),sample_weight_mode='temporal')
+            model.compile(loss=loss, optimizer=RMSprop(lr=0.01),
+                          sample_weight_mode='temporal')
 
     """
 
