@@ -1,0 +1,5 @@
+#!/bin/bash
+sphinx-apidoc -M -l -o ./docs ./
+cd docs
+make html
+(neumann-ven)
