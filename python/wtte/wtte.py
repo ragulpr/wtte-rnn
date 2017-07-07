@@ -29,6 +29,7 @@ def output_lambda(x, init_alpha=1.0, max_beta_value=5.0, max_alpha_value=None):
     """Elementwise (Lambda) computation of alpha and regularized beta.
 
         - Alpha:
+
             (activation)
             Exponential units seems to give faster training than
             the original papers softplus units. Makes sense due to logarithmic
@@ -49,7 +50,8 @@ def output_lambda(x, init_alpha=1.0, max_beta_value=5.0, max_alpha_value=None):
             (regularization) Use max_beta_value to implicitly regularize the model
             (initialization) Fixed to begin moving slowly around 1.0
 
-        Assumes tensorflow backend.
+        .. note::
+            Assumes `tensorflow` backend.
 
         :param x: tensor with last dimension having length 2 with x[...,0] = alpha, x[...,1] = beta
         :param init_alpha: initial value of `alpha`. Default value is 1.0.
@@ -97,9 +99,6 @@ class output_activation(object):
         Wrapper
 
         - Usage
-
-            :Example:
-
             .. code-block:: python
             
                wtte_activation = wtte.output_activation(init_alpha=1.,
@@ -115,6 +114,11 @@ class output_activation(object):
         self.max_beta_value = max_beta_value
 
     def activation(self, ab):
+        """ (Internal function) Activation wrapper
+        
+        :param ab: original tensor with alpha and beta.
+        :return ab: return of `output_lambda` with `init_alpha` and `max_beta_value`. 
+        """
         ab = output_lambda(ab, init_alpha=self.init_alpha,
                            max_beta_value=self.max_beta_value)
 

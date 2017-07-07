@@ -1,8 +1,15 @@
+"""
+Wrapper for Python Weibull functions
+"""
 import numpy as np
-# Python weibull functions
-
 
 def cumulative_hazard(t, a, b):
+    """ Cumulative hazard
+    :param t: Value
+    :param a: Alpha
+    :param b: Beta
+    :return: `np.power(t / a, b)`
+    """
     t = np.double(t)
     return np.power(t / a, b)
 
@@ -13,21 +20,49 @@ def hazard(t, a, b):
 
 
 def cdf(t, a, b):
+    """ Cumulative distribution function
+
+    :param t: Value
+    :param a: Alpha
+    :param b: Beta
+    :return: `1 - np.exp(-np.power(t / a, b))`
+    """
     t = np.double(t)
     return 1 - np.exp(-np.power(t / a, b))
 
 
 def pdf(t, a, b):
+    """ Probability distribution function
+    
+    :param t: Value 
+    :param a: Alpha
+    :param b: Beta
+    :return:`(b / a) * np.power(t / a, b - 1) * np.exp(-np.power(t / a, b))` 
+    """
     t = np.double(t)
     return (b / a) * np.power(t / a, b - 1) * np.exp(-np.power(t / a, b))
 
 
 def cmf(t, a, b):
+    """ Cumulative Mass Function
+
+    :param t: Value 
+    :param a: Alpha
+    :param b: Beta
+    :return: `cdf(t + 1, a, b)`
+    """
     t = np.double(t) + 1e-35
     return cdf(t + 1, a, b)
 
 
 def pmf(t, a, b):
+    """ Probability mass function
+    
+    :param t: 
+    :param a: Alpha
+    :param b: Beta
+    :return: `cdf(t + 1.0, a, b) - cdf(t, a, b)`
+    """
     t = np.double(t) + 1e-35
     return cdf(t + 1.0, a, b) - cdf(t, a, b)
 
@@ -41,19 +76,34 @@ def mode(a, b):
 
 
 def mean(a, b):
-    # Continuous mean. at most 1 step below discretized mean
-    # E[T ] <= E[Td] + 1 true for positive distributions.
+    """ Continuous mean. at most 1 step below discretized mean 
+    
+    `E[T ] <= E[Td] + 1` true for positive distributions.
+    """
     from scipy.special import gamma
     return a * gamma(1.0 + 1.0 / b)
 
 
 def quantiles(a, b, p):
+    """ Quantiles
+    
+    :param a: Alpha
+    :param b: Beta
+    :param p: 
+    :return: `a * np.power(-np.log(1.0 - p), 1.0 / b)`
+    """
     return a * np.power(-np.log(1.0 - p), 1.0 / b)
 
 
 def mean(a, b):
-    # Continuous mean. Theoretically at most 1 step below discretized mean
-    # E[T ] <= E[Td] + 1 true for positive distributions.
+    """Continuous mean. Theoretically at most 1 step below discretized mean
+    
+    `E[T ] <= E[Td] + 1` true for positive distributions.
+    
+    :param a: Alpha
+    :param b: Beta
+    :return: `a * gamma(1.0 + 1.0 / b)`
+    """
     from scipy.special import gamma
     return a * gamma(1.0 + 1.0 / b)
 
