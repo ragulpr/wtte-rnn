@@ -10,12 +10,17 @@ setup(
     url='https://github.com/ragulpr/wtte-rnn/',
     license='MIT',
     install_requires=[
+        'keras>=2.0',
         'numpy',
         'pandas',
-        'keras',
-        'tensorflow',
+        'scipy',
+        'six==1.10.0',
+        'tensorflow~=1.1.0',
     ],
+    extras_require={
+        'plot': ['matplotlib'],
+    },
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
-    packages=['wtte'],
+    packages=find_packages('.', exclude=['examples', 'tests']),
 )

@@ -1,6 +1,6 @@
-numpy
-scipy
-matplotlib
-pandas
-tensorflow>=1.1
 keras>=2.0
+numpy
+pandas
+scipy
+six==1.10.0
+tensorflow~=1.1.0
