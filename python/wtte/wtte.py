@@ -3,13 +3,9 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+from six.moves import xrange
 
 from keras import backend as K
-
-try:
-    xrange
-except NameError:
-    xrange = range
 
 
 def _keras_unstack_hack(ab):

@@ -4,13 +4,9 @@ from __future__ import print_function
 
 import numpy as np
 import pandas as pd
+from six.moves import xrange
 
 from .tte_util import get_tte, get_is_not_censored
-
-try:
-    xrange
-except NameError:
-    xrange = range
 
 
 def df_to_array(df, column_names, nanpad_right=True, return_lists=False, id_col='id', t_col='t'):
@@ -399,7 +395,7 @@ def shift_discrete_padded_features(padded, fill=0):
 def normalize_padded(padded, means=None, stds=None):
     """ norm. by last dim of padded with norm.coef or get them.
 
-        TODO consider importing instead ex: 
+        TODO consider importing instead ex:
             from sklearn.preprocessing import StandardScaler, RobustScaler
             robust_scaler = RobustScaler()
             x_train = robust_scaler.fit_transform(x_train)

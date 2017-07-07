@@ -4,13 +4,10 @@ from __future__ import print_function
 
 import numpy as np
 import matplotlib.pyplot as plt
+from six.moves import xrange
 
 from wtte import weibull
 
-try:
-    xrange
-except NameError:
-    xrange = range
 
 def weibull_contour(Y, U, is_discrete, true_alpha, true_beta, logx=True, samples=200, lines=True):
 

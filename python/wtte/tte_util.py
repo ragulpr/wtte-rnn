@@ -4,11 +4,7 @@ from __future__ import print_function
 
 import numpy as np
 import pandas as pd
-
-try:
-    xrange
-except NameError:
-    xrange = range
+from six.moves import xrange
 
 # TODO
 # - Proper tests of everything
