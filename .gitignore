@@ -1,11 +1,11 @@
 .DS_Store
+.cache
 *.csv
 *.history
 *.ipynb_checkpoints
 python/build/
 python/dist/
 python/\.egg-info/
-python/\.cache/
 python/\.eggs/
 __pycache__/
 *.pyc

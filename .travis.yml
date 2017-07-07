@@ -19,5 +19,7 @@ install:
   - pip install ./python/
 
 # command to run tests
-script: pytest
+script:
+  - cd python
+  - python setup.py test
 
