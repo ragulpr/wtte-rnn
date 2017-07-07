@@ -96,15 +96,17 @@ def steps_to_true_minimal(is_event):
 
 def get_tte_discrete(is_event, t_elapsed=None):
     """Calculates discretely measured tte.
-        Caveats:
-            tte[i] = numb. timesteps to timestep with event
-            Step of event has tte = 0
-           (event happened at time [t,t+1))
-            tte[-1]=1 if no event (censored data)
 
         :param Array is_event: Boolean array
         :param IntArray t_elapsed: integer array with same length as `is_event`. If none, it will use `xrange(len(is_event))`
         :return Array tte: Time-to-event array (discrete version)
+
+
+        - Caveats
+            tte[i] = numb. timesteps to timestep with event
+            Step of event has tte = 0
+           (event happened at time [t,t+1))
+            tte[-1]=1 if no event (censored data)    
     """
     n = len(is_event)
     tte = np.int32(is_event)
@@ -122,16 +124,17 @@ def get_tte_discrete(is_event, t_elapsed=None):
 
 def get_tte_continuous(is_event, t_elapsed):
     """Calculates time to (pointwise measured) next event.
-        Returns: diff object of time. Double, difftime, int etc.
-        Caveats:
+
+        :param Array is_event: Boolean array
+        :param IntArray t_elapsed: integer array with same length as `is_event` that supports vectorized subtraction. If none, it will use `xrange(len(is_event))`
+        :return Array tte: Time-to-event (continuous version) 
+
+        .. Caveats::
             tte[i] = time to *next* event at time t[i]
             (t[i] is exactly at event&/or query)
             tte[-1]=0 always
             (since last time is a *point*)
             Last datpoints are right censored.
-        :param Array is_event: Boolean array
-        :param IntArray t_elapsed: integer array with same length as `is_event` that supports vectorized subtraction. If none, it will use `xrange(len(is_event))`
-        :return Array tte: Time-to-event (continuous version) 
     """
     n = len(is_event)
     if t_elapsed is None:
@@ -168,12 +171,12 @@ def get_tse(is_event, t_elapsed=None):
             we know at record of event so superfluous to have tse=0)
         tse = 0 at first step
 
-        TODO: reverse-indexing is pretty slow and ugly and not a
-        helpful template for implementing in other languages.
-
-
         :param Array is_event: Boolean array
         :param IntArray t_elapsed: integer array with same length as `is_event` . If none, it will use `t_elapsed.max() - t_elapsed[::-1]`.
+
+        .. TODO::
+        reverse-indexing is pretty slow and ugly and not a helpful template for implementing in other languages.
+
     """
     if t_elapsed is not None:
         t_elapsed = t_elapsed.max() - t_elapsed[::-1]
@@ -183,7 +186,7 @@ def get_tse(is_event, t_elapsed=None):
 
 def get_is_not_censored(is_event, discrete_time=True):
     """ Calculates non-censoring indicator u
-
+        
         :param Boolean discrete_time: if `True`, last observation is conditionally censored.
     """
     n = len(is_event)
