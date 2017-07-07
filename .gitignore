@@ -20,4 +20,7 @@ python/tests/__pycache__/
 wtte-rnn-env
 
 # sphinx-docs related files
-
+docs/_build/
+docs/*.rst
+docs/_templates/
+docs/_static/
