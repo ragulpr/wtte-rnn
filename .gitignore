@@ -15,3 +15,9 @@ python/\.eggs/
 python/tests/__pycache__/
 
 *.pyc
+
+# virtualenv
+wtte-rnn-env
+
+# sphinx-docs related files
+
