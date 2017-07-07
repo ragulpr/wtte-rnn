@@ -20,6 +20,4 @@ install:
 
 # command to run tests
 script:
-  - cd python
-  - python setup.py test
-
+  - cd python && python -m pytest tests/
