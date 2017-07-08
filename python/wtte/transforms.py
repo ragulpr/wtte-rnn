@@ -15,7 +15,7 @@ def df_to_array(df, column_names, nanpad_right=True, return_lists=False, id_col=
     :param df: dataframe with columns
       * `id`: integer
       * `t`: integer
-      * `columns` in `column_names (String list)
+      * `columns` in `column_names` (String list)
         Where rows in df are the t'th row for a id. Think user and t'th action.
         If `t` is a non-contiguous int vec per id then steps in between t's
         are padded with zeros.
