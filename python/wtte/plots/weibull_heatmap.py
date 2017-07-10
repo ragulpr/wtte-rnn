@@ -9,7 +9,8 @@ from six.moves import xrange
 from wtte import weibull
 
 
-def plot_heatmap(
+#from wtte.plots.plot_heatmap import plot_heatmap
+def weibull_heatmap(
     fig, ax,
     t,
     a,
@@ -106,8 +107,8 @@ def plot_heatmap(
     if time_to_event is not None:
         if not all(is_censored):
             ax_add_scaled_line(ax,
-                               t[~is_censored],
-                               true_time_to_event[~is_censored],
+                               t,
+                               true_time_to_event,
                                y_value_max=max_horizon,
                                y_n_pixels=resolution,
                                drawstyle=drawstyle,
