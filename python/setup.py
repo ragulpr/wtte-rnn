@@ -15,7 +15,7 @@ setup(
         'pandas',
         'scipy',
         'six==1.10.0',
-        'tensorflow~=1.1.0',
+        'tensorflow>=1.1.0',
     ],
     extras_require={
         'plot': ['matplotlib'],
