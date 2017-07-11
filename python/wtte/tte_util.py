@@ -30,9 +30,9 @@ def carry_forward_if(x, is_true):
     """Locomote forward object x[i] if is_true[i].
         remain x untouched before first pos of truth.
 
-        :param Array x: forward object x
-        :param Array is_true: array containing true/false boolean index.
-        :return Array x:forward object x
+        :param Array x: object whos elements are to carry forward
+        :param Array is_true: same length as x containing true/false boolean.
+        :return Array x: forwarded object
     """
     for i in xrange(len(x)):
         if is_true[i]:
@@ -46,9 +46,9 @@ def carry_backward_if(x, is_true):
     """Locomote backward object x[i] if is_true[i].
         remain x untouched after last pos of truth.
 
-        :param Array x: backward object x
-        :param Array is_true: array containing true/false boolean index.
-        :return Array x: backward object x
+        :param Array x: object whos elements are to carry backward
+        :param Array is_true: same length as x containing true/false boolean.
+        :return Array x: backwarded object
     """
     for i in xrange(reversed(len(x))):
         if is_true[i]:
@@ -61,7 +61,8 @@ def carry_backward_if(x, is_true):
 def steps_since_true_minimal(is_event):
     """(Time) since event over discrete (padded) events.
 
-        :param Array is_event:
+        :param Array is_event: a vector of 0/1s or boolean
+        :return Array x: steps since is_event was true
     """
     n = len(is_event)
     z = -1  # at the latest on step before
@@ -76,8 +77,8 @@ def steps_since_true_minimal(is_event):
 def steps_to_true_minimal(is_event):
     """(Time) to event for discrete (padded) events.
 
-        :param Array is_event:
-        :return Array x:
+        :param Array is_event: a vector of 0/1s or boolean
+        :return Array x: steps until is_event is true
     """
     n = len(is_event)
     z = n  # at the earliest on step after
@@ -123,6 +124,10 @@ def get_tte_continuous(is_event, t_elapsed):
         :param Array is_event: Boolean array
         :param IntArray t_elapsed: integer array with same length as `is_event` that supports vectorized subtraction. If none, it will use `xrange(len(is_event))`
         :return Array tte: Time-to-event (continuous version)
+
+        TODO::
+            Should support float t_elapsed.
+            Should support discretely sampled, continuously measured TTE
 
         .. Caveats::
             tte[i] = time to *next* event at time t[i]

@@ -25,11 +25,11 @@ def df_to_array(df, column_names, nanpad_right=True, return_lists=False, id_col=
     :param_id_col: Column where `id` is located
     :param t_col: Column where `t` is located
     :return padded: With seqlen the max value of `t` per id
-      * if nanpad_right & !return_lists):
+      * if nanpad_right & !return_lists:
         a numpy float array of dimension `[n_seqs,max_seqlen,n_features]`
-      * if nanpad_right & return_lists):
+      * if nanpad_right & return_lists:
         n_seqs numpy float sub-arrays of dimension `[max_seqlen,n_features]`
-      * if !nanpad_right & return_lists):
+      * if !nanpad_right & return_lists:
         n_seqs numpy float sub-arrays of dimension `[seqlen,n_features]`
     """
 

@@ -48,9 +48,6 @@ def output_lambda(x, init_alpha=1.0, max_beta_value=5.0, max_alpha_value=None):
             (regularization) Use max_beta_value to implicitly regularize the model
             (initialization) Fixed to begin moving slowly around 1.0
 
-        .. note::
-            Assumes `tensorflow` backend.
-
         :param x: tensor with last dimension having length 2 with x[...,0] = alpha, x[...,1] = beta
         :param init_alpha: initial value of `alpha`. Default value is 1.0.
         :param max_beta_value: maximum beta value. Default value is 5.0.
@@ -145,8 +142,8 @@ class loss(object):
         .. note::
 
             With masking keras needs to access each loss-contribution individually.
-            Therefore we do not sum/reduce down to dim 1, instead a return tensor
-            (with reduce_loss=False).
+            Therefore we do not sum/reduce down to scalar (dim 1), instead return a 
+            tensor (with reduce_loss=False).
 
     """
 
