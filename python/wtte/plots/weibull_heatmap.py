@@ -9,7 +9,6 @@ from six.moves import xrange
 from wtte import weibull
 
 
-#from wtte.plots.plot_heatmap import plot_heatmap
 def weibull_heatmap(
     fig, ax,
     t,
