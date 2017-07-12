@@ -15,57 +15,41 @@ from wtte.transforms import shift_discrete_padded_features
 from wtte.transforms import left_pad_to_right_pad
 from wtte.transforms import right_pad_to_left_pad
 
+def df_to_padded_padded_to_df_runner(t_col):
+        n_seqs = 5
+        max_seq_length = 10
+        ids = xrange(n_seqs)
+        cols_to_expand = ['event', 'int_column', 'double_column']
+        np.random.seed(1)
+
+        df = generate_random_df(n_seqs, max_seq_length)
+        df = df.reset_index(drop=True)
+
+        # Column names to transform to tensor
+        dtypes = df[cols_to_expand].dtypes.values
+        padded = df_to_padded(df, cols_to_expand, 'id', t_col)
+
+        df_new = padded_to_df(padded, cols_to_expand,
+                              dtypes, ids, 'id', t_col)
+        # Pandas is awful. Index changes when slicing
+        df = df[['id', t_col] + cols_to_expand].reset_index(drop=True)
+        pd.util.testing.assert_frame_equal(df, df_new)
+
 class TestDfToPaddedPaddedToDf:
     """tests df_to_padded and padded_to_df
     generates a dataframe, transforms it to tensor format then back
     to the same df.
     """
 
-    def record_based():
+    def test_record_based(self):
         """here only
         """
-        n_seqs = 5
-        max_seq_length = 10
-        ids = xrange(n_seqs)
-        cols_to_expand = ['event', 'int_column', 'double_column']
-        np.random.seed(1)
+        df_to_padded_padded_to_df_runner(t_col='t_ix')
 
-        df = generate_random_df(n_seqs, max_seq_length)
-        df['t_ix'] = df.groupby(['id'])['t_elapsed'].rank(
-            method='dense').astype(int) - 1
-        df = df.reset_index(drop=True)
-
-        # Column names to transform to tensor
-        dtypes = df[cols_to_expand].dtypes.values
-        padded = df_to_padded(df, cols_to_expand, 'id', 't_ix')
-
-        df_new = padded_to_df(padded, cols_to_expand,
-                              dtypes, ids, 'id', 't_ix')
-        # Pandas is awful. Index changes when slicing
-        df = df[['id', 't_ix'] + cols_to_expand].reset_index(drop=True)
-        pd.util.testing.assert_frame_equal(df, df_new)
-
-    def padded_between():
+    def test_padded_between(self):
         """Tests df_to_padded, padded_to_df
         """
-        n_seqs = 5
-        max_seq_length = 10
-        ids = xrange(n_seqs)
-        cols_to_expand = ['event', 'int_column', 'double_column']
-        np.random.seed(1)
-
-        df = generate_random_df(n_seqs, max_seq_length)
-        df = df.reset_index(drop=True)
-
-        # Column names to transform to tensor
-        dtypes = df[cols_to_expand].dtypes.values
-        padded = df_to_padded(df, cols_to_expand, 'id', 't_elapsed')
-
-        df_new = padded_to_df(padded, cols_to_expand,
-                              dtypes, ids, 'id', 't_elapsed')
-        # Pandas is awful. Index changes when slicing
-        df = df[['id', 't_elapsed'] + cols_to_expand].reset_index(drop=True)
-        pd.util.testing.assert_frame_equal(df, df_new)
+        df_to_padded_padded_to_df_runner(t_col='t_elapsed')
 
 
 def test_shift_discrete_padded_features():
