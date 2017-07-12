@@ -6,24 +6,23 @@ import numpy as np
 import pandas as pd
 from six.moves import xrange
 
-from .tte_util import get_tte, get_is_not_censored
+from .tte_util import get_is_not_censored
+from .tte_util import get_tte
 
 
 def df_to_array(df, column_names, nanpad_right=True, return_lists=False, id_col='id', t_col='t'):
     """ converts flat pandas df `{id,t,col1,col2,..}` to array indexed `[id,t,col]`.
 
     :param df: dataframe with columns
-      * `id`: integer
-      * `t`: integer
+      * `id`: Any type. A key for the sequence.
+      * `t`: integer. If `t` is a non-contiguous int vec per id then steps in
+        between t's are padded with zeros.
       * `columns` in `column_names` (String list)
-        Where rows in df are the t'th row for a id. Think user and t'th action.
-        If `t` is a non-contiguous int vec per id then steps in between t's
-        are padded with zeros.
     :type df: Pandas dataframe
-    :param Boolean nanpad_right: If `True`,  sequences are `np.nan-padded` to `max_seq_len`
-    :param return_lists:
-    :param_id_col: Column where `id` is located
-    :param t_col: Column where `t` is located
+    :param Boolean nanpad_right: If `True`, sequences are `np.nan`-padded to `max_seq_len`
+    :param return_lists: Put every tensor in its own subarray
+    :param_id_col: string column name for `id`
+    :param t_col: string column name for `t`
     :return padded: With seqlen the max value of `t` per id
       * if nanpad_right & !return_lists:
         a numpy float array of dimension `[n_seqs,max_seqlen,n_features]`
@@ -33,7 +32,6 @@ def df_to_array(df, column_names, nanpad_right=True, return_lists=False, id_col=
         n_seqs numpy float sub-arrays of dimension `[seqlen,n_features]`
     """
 
-    # df.sort_values(by=['id','t'], inplace=True)
     # set the index to be this and don't drop
     df.set_index(keys=[id_col], drop=False, inplace=True)
     unique_ids = df[id_col].unique()
@@ -50,6 +48,7 @@ def df_to_array(df, column_names, nanpad_right=True, return_lists=False, id_col=
 
     max_seq_len = seq_lengths.max()
 
+    # Initialize the array to be filled
     if return_lists:
         if nanpad_right:
             padded = np.split(np.zeros([n_seqs * max_seq_len, n_features]),
@@ -60,6 +59,7 @@ def df_to_array(df, column_names, nanpad_right=True, return_lists=False, id_col=
     else:
         padded = np.zeros([n_seqs, max_seq_len, n_features])
 
+    # Fill it
     for s in xrange(n_seqs):
         # df_user is a view
         df_user = df.loc[df[id_col].values == unique_ids[s]]
@@ -88,7 +88,6 @@ def padded_to_df(padded, column_names, dtypes, ids=None, id_col='id', t_col='t')
     """takes padded numpy array and converts nonzero entries to pandas dataframe row.
 
     Inverse to df_to_padded.
-    TODO: Support mapping to non-contiguous t_col?
 
     :param padded: a numpy float array of dimension `[n_seqs,max_seqlen,n_features]`.
     :param column_names: other columns to expand from df
@@ -98,8 +97,8 @@ def padded_to_df(padded, column_names, dtypes, ids=None, id_col='id', t_col='t')
     :param id_col: Column where `id` is located. Default value is `id`.
     :param t_col: Column where `t` is located. Default value is `t`.
     :return df: Dataframe with Columns
-      *  `id` (Integer)
-      * `t` (Integer).
+      *  `id` (Integer) or the value of `ids`
+      *  `t` (Integer).
       A row in df is the t'th event for a `id` and has columns from `column_names`
     """
 
