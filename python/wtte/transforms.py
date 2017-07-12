@@ -448,7 +448,7 @@ def normalize_padded(padded, means=None, stds=None):
     padded = padded - means
 
     if stds is None:
-        stds = np.nanmean(np.float128(
+        stds = np.nanstd(np.float128(
             padded.reshape(n_obs, n_features)), axis=0)
 
     stds = means.reshape([1, 1, n_features])
