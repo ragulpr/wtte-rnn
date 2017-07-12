@@ -13,6 +13,7 @@ from keras.layers.wrappers import TimeDistributed
 from keras.optimizers import RMSprop
 
 from wtte import wtte as wtte
+from .util import generate_weibull
 
 
 def test_keras_unstack_hack():
@@ -31,26 +32,13 @@ def test_keras_unstack_hack():
 # Should converge to the generating A(alpha) and B(eta) for each timestep
 
 
-def generate_data(A, B, C, shape, discrete_time):
-    # Generate Weibull random variables
-    W = np.sort(A * np.power(-np.log(np.random.uniform(0, 1, shape)), 1 / B))
-
-    if discrete_time:
-        C = np.floor(C)
-        W = np.floor(W)
-
-    U = np.less_equal(W, C) * 1.
-    Y = np.minimum(W, C)
-    return W, Y, U
-
-
 def get_data(discrete_time):
-    y_test, y_train, u_train = generate_data(A=real_a,
-                                             B=real_b,
-                                             C=censoring_point,  # <np.inf -> impose censoring
-                                             shape=[n_sequences,
-                                                    n_timesteps, 1],
-                                             discrete_time=discrete_time)
+    y_test, y_train, u_train = generate_weibull(A=real_a,
+                                                B=real_b,
+                                                C=censoring_point,  # <np.inf -> impose censoring
+                                                shape=[n_sequences,
+                                                       n_timesteps, 1],
+                                                discrete_time=discrete_time)
     # With random input it _should_ learn weight 0
     x_train = x_test = np.random.uniform(
         low=-1, high=1, size=[n_sequences, n_timesteps, n_features])

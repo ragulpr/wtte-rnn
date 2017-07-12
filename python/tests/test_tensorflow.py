@@ -7,22 +7,10 @@ import tensorflow as tf
 import numpy as np
 
 from wtte.objectives.tensorflow import loglik_continuous, loglik_discrete
+from .util import generate_weibull
 
 # SANITY CHECK: Use pure Weibull data censored at C(ensoring point).
 # Should converge to the generating A(alpha) and B(eta) for each timestep
-
-
-def generate_data(A, B, C, shape, discrete_time):
-    # Generate Weibull random variables
-    W = np.sort(A * np.power(-np.log(np.random.uniform(0, 1, shape)), 1 / B))
-
-    if discrete_time:
-        C = np.floor(C)
-        W = np.floor(W)
-
-    U = np.less_equal(W, C) * 1.
-    Y = np.minimum(W, C)
-    return W, Y, U
 
 n_samples = 1000
 n_features = 1
@@ -57,7 +45,7 @@ def tf_loglik_runner(loglik_fun, discrete_time):
     # Initializes global variables in the graph.
     sess.run(tf.global_variables_initializer())
 
-    tte_actual, tte_censored, u_train = generate_data(
+    tte_actual, tte_censored, u_train = generate_weibull(
         A=real_a,
         B=real_b,
         C=censoring_point,  # <np.inf -> impose censoring
@@ -69,7 +57,7 @@ def tf_loglik_runner(loglik_fun, discrete_time):
         loss_val, _, a_val, b_val = sess.run([loss, train_step, a, b], feed_dict={
                                              y_: tte_censored, u_: u_train})
 
-#        print('iteration:',step,'alpha :',a_val,'beta :',b_val,'discrete_time: ',discrete_time)
+       # print('iteration:',step,'alpha :',a_val,'beta :',b_val,'discrete_time: ',discrete_time)
     print((real_a - a_val)**2, (real_b - b_val)**2)
     assert (real_a - a_val)**2 < 0.01
     assert (real_b - b_val)**2 < 0.01
