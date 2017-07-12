@@ -9,7 +9,8 @@ from six.moves import xrange
 # - Proper tests of everything
 # - naming in general.
 # - be clearer about meaning of t_elapsed, t_ix and either (t)
-
+# - Time Since Event is a ticking bomb. Needs better naming/definitions
+#   to ensure that it's either inverse TTE or a feature or if they coincide.
 
 def roll_fun(x, size, fun=np.mean, reverse=False):
     y = np.copy(x)
@@ -91,7 +92,7 @@ def steps_to_true_minimal(is_event):
 
 
 def get_tte_discrete(is_event, t_elapsed=None):
-    """Calculates discretely measured tte.
+    """Calculates discretely measured tte over a vector.
 
         :param Array is_event: Boolean array
         :param IntArray t_elapsed: integer array with same length as `is_event`. If none, it will use `xrange(len(is_event))`
@@ -119,14 +120,13 @@ def get_tte_discrete(is_event, t_elapsed=None):
 
 
 def get_tte_continuous(is_event, t_elapsed):
-    """Calculates time to (pointwise measured) next event.
+    """Calculates time to (pointwise measured) next event over a vector.
 
         :param Array is_event: Boolean array
         :param IntArray t_elapsed: integer array with same length as `is_event` that supports vectorized subtraction. If none, it will use `xrange(len(is_event))`
         :return Array tte: Time-to-event (continuous version)
 
         TODO::
-            Should support float t_elapsed.
             Should support discretely sampled, continuously measured TTE
 
         .. Caveats::
