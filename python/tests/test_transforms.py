@@ -14,6 +14,7 @@ from wtte.transforms import padded_to_df
 from wtte.transforms import shift_discrete_padded_features
 from wtte.transforms import left_pad_to_right_pad
 from wtte.transforms import right_pad_to_left_pad
+from wtte.transforms import normalize_padded
 
 def df_to_padded_padded_to_df_runner(t_col):
         n_seqs = 5
@@ -80,3 +81,15 @@ def test_align_padded():
     padded = np.copy(np.squeeze(padded))
     np.testing.assert_array_equal(
         padded, left_pad_to_right_pad(right_pad_to_left_pad(padded)))
+
+def test_normalize_padded():
+    """
+        Assume that a random normal should stay approx unchanged 
+        after transformation.
+    """
+
+    padded = np.random.normal(0, 1, [10000, 10, 10])
+    padded_new, means, stds = normalize_padded(padded)
+    padded_new, _, _ = normalize_padded(padded, means, stds)
+
+    assert np.abs(padded-padded_new).mean()<0.01

@@ -469,7 +469,7 @@ def normalize_padded(padded, means=None, stds=None):
         stds = np.nanstd(np.float128(
             padded.reshape(n_obs, n_features)), axis=0)
 
-    stds = means.reshape([1, 1, n_features])
+    stds = stds.reshape([1, 1, n_features])
     if (stds < epsilon).any():
         print('warning. Constant cols: ', np.where((stds < epsilon).flatten()))
         stds[stds < epsilon] = 1.0
