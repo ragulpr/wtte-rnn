@@ -366,53 +366,71 @@ def df_join_in_endtime(df, constant_per_id_cols='id',
 
 
 def shift_discrete_padded_features(padded, fill=0):
-    """ Shift discrete padded features.
+    """
+    Feature cols : data available in realtime at timestamp
+    Target  cols : not known at timestamp
 
-        Feature cols : data available at timestamp
-        Target  cols : not known at timestamp
+    For mathematical purity and to avoid confusion, in the Discrete case
+    "2015-12-15" means an interval "2015-12-15 00.00 - 2015-12-15 23.59" i.e the data
+    is accessible at "2015-12-15 23.59"  (time when we query our database to
+    do prediction about next day.)
 
-        - discrete case
+    In the continuous case "2015-12-15 23.59" means exactly at
+    "2015-12-15 23.59: 00000000".
 
-            "event = 1 if event happens today"
-             at 2015-12-15 (00:00:00) we know n_commits..
-             to 2015-12-14 (23.59:59)
-            If no event until
-                2015-12-15 (23:59:59) then event = 0
-             at 2015-12-15 (23:59:59)
+    Discrete case
+    t|dt                    |Event
+    0|2015-12-15 00.00-23.59|1
+    1|2015-12-16 00.00-23.59|1
+    2|2015-12-17 00.00-23.59|0
+    etc
+    In detail:
+    t        |0|1|2|3|4|5|....
+    ---------------------|....
+    event    |1|1|0|0|1|?|....
+    feature  |?|1|1|0|0|1|....
+    TTE      |0|0|2|1|0|?|....
+    Observed*|F|T|T|T|T|T|....
 
-        - continuous case
+    Continuous case
+    t|dt              |Event
+    0|2015-12-15 14.39|1
+    1|2015-12-16 16.11|1
+    2|2015-12-17 22.18|0
+    etc
+    In detail:
 
-            "event =1 if event happens now"
-             at 2015-12-15 (00:00:00) we know n_commits..
-             to 2015-12-15 (00:00:00)
-            If no event at
-                2015-12-15 (00:00:00) then event = 0
-             at 2015-12-15 (00:00:00)
+    t        |0|1|2|3|4|5|....
+    ---------------------|....
+    event    |1|1|0|0|1|?|....
+    feature  |1|1|0|0|1|?|....
+    TTE      |1|3|2|1|?|?|....
+    Observed*|T|T|T|T|T|T|....
 
-        -> if_discrete we need to roll data intent as features to the right.
+    Observed* = Do we have feature data at this time?
+        In the discrete case:
+        -> we need to roll data intent as features to the right.
+          -> First timestep typically has no measured features (and we may not even
+          know until the end of the first interval if the sequence even exists!)
 
-        .. Note::
-            Consider this
-            As observed after the fact,
-                event   : [0,1,0,0,1]
-                feature : [0,1,2,3,4]
-            features and and target at t generated at [t,t+1)!
+        So there's two options after rolling features to the right:
+        1. Fill in 0s at t=0. (`shift_discrete_padded_features`)
+            note: if (data -> event) this is (randomly) leaky (potentially safe)
+            note: if (data <-> event) this exposes the truth (unsafe)!
+        2. Remove t=0 from target data
+            (dont learn to predict about prospective customers first purchase)
+            Safest!
+        note: We never have target data for the last timestep after rolling.
 
-            As observed in realtime and what to feed to model
-                event   : [0,1,0,0,1,?]
-                feature : [?,0,1,2,3,4] <- last timestep can predict but can't train
-            features at t generated at [t-1,t), target at t generated at [t,t+1)!
-              -> First timestep has no features (don't know what happened day before first day)
-                     fix: set it to 0
-              -> last timestep  has no target  (don't know what can happen today)
-                     fix: don't use it during training.
-
-            Unfortunately it usually makes sense to decide on fill-value after feature normalization so do it on padded values
+      Example:
+      Customer has first click leading to day 0 so at day 1 we can use
+      features about that click to predict time to purchase.
+      Since click does not imply purchase we can predict time to purchase
+      at step 0 (but with no feature data, ex using zeros as input).
     """
     padded = np.roll(padded, shift=1, axis=1)
     padded[:, 0] = fill
     return padded
-
 
 def normalize_padded(padded, means=None, stds=None):
     """ norm. by last dim of padded with norm.coef or get them.
@@ -430,7 +448,7 @@ def normalize_padded(padded, means=None, stds=None):
            * If events are sparse then this may lead to huge values.
     """
     # TODO epsilon choice is random
-    epsilon = 1e-8
+    epsilon = 1e-6
     original_dtype = padded.dtype
 
     is_flat = len(padded.shape) == 2
@@ -448,7 +466,7 @@ def normalize_padded(padded, means=None, stds=None):
     padded = padded - means
 
     if stds is None:
-        stds = np.nanmean(np.float128(
+        stds = np.nanstd(np.float128(
             padded.reshape(n_obs, n_features)), axis=0)
 
     stds = means.reshape([1, 1, n_features])
