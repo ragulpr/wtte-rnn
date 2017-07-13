@@ -32,11 +32,12 @@ def df_to_array(df, column_names, nanpad_right=True, return_lists=False, id_col=
         n_seqs numpy float sub-arrays of dimension `[seqlen,n_features]`
     """
 
-    # set the index to be this and don't drop
-    df.set_index(keys=[id_col], drop=False, inplace=True)
-    unique_ids = df[id_col].unique()
+    # Do not sort. Create a view.
+    grouped = df.groupby(id_col, sort=False)
 
-    n_seqs = len(unique_ids)
+    unique_ids = grouped.groups.keys()
+
+    n_seqs = grouped.ngroups
     n_features = len(column_names)
     seq_lengths = df[[id_col, t_col]].groupby(
         id_col).aggregate('max')[t_col].values + 1
@@ -62,9 +63,9 @@ def df_to_array(df, column_names, nanpad_right=True, return_lists=False, id_col=
     # Fill it
     for s in xrange(n_seqs):
         # df_user is a view
-        df_user = df.loc[df[id_col].values == unique_ids[s]]
+        df_group = grouped.get_group(unique_ids[s])
 
-        padded[s][np.array(df_user[t_col]), :] = df_user[column_names]
+        padded[s][df_group[t_col].values, :] = df_group[column_names].values
         if nanpad_right and seq_lengths[s] < max_seq_len:
             padded[s][seq_lengths[s]:, :].fill(np.nan)
 
