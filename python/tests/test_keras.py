@@ -48,6 +48,7 @@ def get_data(discrete_time):
     y_train = np.append(y_train, u_train, axis=-1)
     return y_train, x_train, y_test, x_test
 
+
 n_sequences = 10000
 n_timesteps = 2
 n_features = 1
@@ -153,28 +154,30 @@ def test_loglik_continuous_masking():
 
 
 def test_output_lambda_initialization():
-    # Initializing beta =1 gives us a simple initialization of alpha.
+    # Initializing beta =1 gives us a simple initialization rule for alpha.
     # it also makes sense considering it initializes the hazard to flat
     # and in general as a regular exponential regression model.
 
-    init_alpha = 10
+    init_alpha = 5
     n_features = 1
-    init_alpha = 10
+    n_timesteps = 10
     np.random.seed(1)
 
     model = Sequential()
 
-    model.add(TimeDistributed(Dense(10, activation='tanh'),
-                              input_shape=(None, n_features)))
+    model.add(TimeDistributed(Dense(5, activation='tanh'),
+                              input_shape=(n_timesteps, n_features)))
 
     model.add(Dense(2))
     model.add(Lambda(wtte.output_lambda, arguments={"init_alpha": init_alpha,
-                                                    "max_beta_value": 3.
+                                                    "max_beta_value": 4.
                                                     }))
 
-    predicted = model.predict(np.random.normal(
-        0, 1, size=[10, 10, n_features]))
-    assert np.abs(predicted[:, :, 0].flatten().mean() -
-                  init_alpha) < 1., 'alpha initialization problematic'
-    assert np.abs(predicted[:, :, 1].flatten().mean() -
-                  1.) < 0.1, 'beta initialization problematic'
+    x = np.random.normal(0, .01, size=[5, n_timesteps, n_features])
+    predicted = model.predict(x)
+
+    # Check that it initializes +- 0.1 from init_alpha,beta=1
+    abs_error = np.abs(predicted[:, :, 0].flatten() - init_alpha).mean()
+    assert abs_error < 0.1, 'alpha initialization error' + str(abs_error)
+    abs_error = np.abs(predicted[:, :, 1].flatten() - 1.).mean()
+    assert abs_error < 0.1, 'beta initialization error' + str(abs_error)
