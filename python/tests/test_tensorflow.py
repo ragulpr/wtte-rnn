@@ -7,7 +7,7 @@ import tensorflow as tf
 import numpy as np
 
 from wtte.objectives.tensorflow import loglik_continuous, loglik_discrete
-from .util import generate_weibull
+from wtte.data_generators import generate_weibull
 
 # SANITY CHECK: Use pure Weibull data censored at C(ensoring point).
 # Should converge to the generating A(alpha) and B(eta) for each timestep

@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from six.moves import xrange
 
-from .util import generate_random_df
+from wtte.data_generators import generate_random_df
 
 from wtte.transforms import df_to_padded
 from wtte.transforms import padded_to_df

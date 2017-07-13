@@ -7,8 +7,8 @@ import pandas as pd
 from six.moves import xrange
 
 
-def generate_random_df(n_seqs,
-                       max_seq_length,
+def generate_random_df(n_seqs=5,
+                       max_seq_length=10,
                        unique_times=True,
                        starttimes_min=0,
                        starttimes_max=0):
@@ -39,7 +39,7 @@ def generate_random_df(n_seqs,
         starttimes = np.zeros(n_seqs)
 
     for s in xrange(n_seqs):
-        # Each sequence is consists of n_obs in the range 0-seq_lengths[s]
+        # Each sequence consists of n_obs in the range 0-seq_lengths[s]
         n_obs = np.sort(np.random.choice(
             seq_lengths[s], 1, replace=False)) + 1
 
@@ -68,7 +68,7 @@ def generate_random_df(n_seqs,
 
     # do not assume row indicates event!
     event_column = np.random.randint(2, size=len(t_column))
-    int_column = np.arange(len(event_column)).astype(int)
+    int_column = np.random.randint(low=-5, high=5, size=len(t_column)).astype(int)
     double_column = np.random.uniform(high=1, low=0, size=len(t_column))
 
     df = pd.DataFrame({'id': id_column,
@@ -86,6 +86,7 @@ def generate_random_df(n_seqs,
     df = df.reset_index(drop=True)
 
     return df
+
 
 def generate_weibull(A, B, C, shape, discrete_time):
     # Generate Weibull random variables

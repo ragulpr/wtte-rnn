@@ -10,7 +10,7 @@ from six.moves import xrange
 from wtte.transforms import padded_to_df
 from wtte.pipelines import data_pipeline
 
-from .util import generate_random_df
+from wtte.data_generators import generate_random_df
 
 
 def run_test(
