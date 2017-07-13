@@ -15,24 +15,21 @@ from wtte.data_generators import generate_random_df
 
 def run_test(
         # '1' on the end dirty way to not pollute testing-namespace
-        id_col1='id',
-        abs_time_col1='time_int',
-        column_names1=['event', 'int_column', 'double_column'],
-        discrete_time1=True,
-        pad_between_steps1=False,
-        infer_seq_endtime1=False,
-        time_sec_interval1=1,
-        timestep_aggregation_dict1=None):
+        id_col1,
+        abs_time_col1,
+        discrete_time1,
+        pad_between_steps1):
     np.random.seed(1)
 
     # Should fail randomly if unique_times = False since it reduces those
     # times.
-    df = generate_random_df(n_seqs=2, max_seq_length=5, unique_times=True)
+    df = generate_random_df(n_seqs=5, max_seq_length=10, unique_times=True)
 
     # rename the abs_time_col to something new to spot assumptions.
     df.rename(columns={"dt": abs_time_col1,
                        'id': id_col1}, inplace=True)
 
+    column_names1 = ['event', 'int_column', 'double_column']
     padded, padded_t, seq_ids, df_collapsed = \
         data_pipeline(df,
                       id_col=id_col1,
@@ -40,9 +37,9 @@ def run_test(
                       column_names=column_names1,
                       discrete_time=discrete_time1,
                       pad_between_steps=pad_between_steps1,
-                      infer_seq_endtime=infer_seq_endtime1,
-                      time_sec_interval=time_sec_interval1,
-                      timestep_aggregation_dict=timestep_aggregation_dict1,
+                      infer_seq_endtime=False,
+                      time_sec_interval=1,
+                      timestep_aggregation_dict=None,
                       drop_last_timestep=False
                       )
 
@@ -66,36 +63,24 @@ class TestPipeline():
             # '1' on the end dirty way to not pollute testing-namespace
             id_col1='idnewname',
             abs_time_col1='time_int',
-            column_names1=['event', 'int_column', 'double_column'],
             discrete_time1=True,
-            pad_between_steps1=True,
-            infer_seq_endtime1=False,
-            time_sec_interval1=1,
-            timestep_aggregation_dict1=None)
+            pad_between_steps1=True)
 
     def test_discrete_unpadded_pipeline(self):
         run_test(
             # '1' on the end dirty way to not pollute testing-namespace
             id_col1='idnewname',
             abs_time_col1='time_int',
-            column_names1=['event', 'int_column', 'double_column'],
             discrete_time1=True,
-            pad_between_steps1=False,
-            infer_seq_endtime1=False,
-            time_sec_interval1=1,
-            timestep_aggregation_dict1=None)
+            pad_between_steps1=False)
 
     def test_continuous_pipeline(self):
         run_test(
             # '1' on the end dirty way to not pollute testing-namespace
             id_col1='idnewname',
             abs_time_col1='time_int',
-            column_names1=['event', 'int_column', 'double_column'],
             discrete_time1=True,
-            pad_between_steps1=False,
-            infer_seq_endtime1=False,
-            time_sec_interval1=1,
-            timestep_aggregation_dict1=None)
+            pad_between_steps1=False)
 
     # def test_discrete_time_continous():  # TODO
     # def test_continuous_time_discrete(): # TODO

@@ -65,7 +65,7 @@ def data_pipeline(
 
     # Add "elapsed time" t_elapsed = 0,3,99,179,.. for each user.
     df['t_elapsed'] = df.groupby([id_col], group_keys=False).apply(
-        lambda g: g.time_int - g.time_int.min())
+        lambda g: g[abs_time_col] - g[abs_time_col].min())
 
     if discrete_time:
         # Let each integer step stand for the time-resolution, eg. days:
