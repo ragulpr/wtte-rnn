@@ -35,7 +35,7 @@ def df_to_array(df, column_names, nanpad_right=True, return_lists=False, id_col=
     # Do not sort. Create a view.
     grouped = df.groupby(id_col, sort=False)
 
-    unique_ids = grouped.groups.keys()
+    unique_ids = list(grouped.groups.keys())
 
     n_seqs = grouped.ngroups
     n_features = len(column_names)
