@@ -57,7 +57,7 @@ def weibull_heatmap(
 
     if time_to_event is not None:
         if censoring_indicator is not None and true_time_to_event is None:
-            is_censored = bool(censoring_indicator)
+            is_censored = np.array(censoring_indicator).astype(bool)
         if true_time_to_event is not None:
             is_censored = (time_to_event < true_time_to_event)
         else:
