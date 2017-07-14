@@ -238,36 +238,6 @@ def padded_events_to_not_censored(events, discrete_time):
 #     return None
 
 
-def df_to_padded_df(df, id_col='id', t_col='t', abs_time_col='dt'):
-    """ zeropads a df between timesteps.
-        df with column
-         id, a column of id
-         t,      a column of (user/sequence) timestep
-         dt, TODO expand range
-         Expands each id to have to contiguous t=0,1,2..,and fills
-         NaNs with 0.
-    """
-    print('warning: not tested/working')
-    if abs_time_col in df.columns:
-        print(abs_time_col, ' filled with 0s :TODO')
-
-    seq_lengths = df[[id_col, t_col]].groupby(
-        id_col).aggregate('max')[t_col].values + 1
-    ids = np.unique(df.id.values)
-    n_seqs = len(ids)
-
-    df_new = pd.DataFrame(index=xrange(sum(seq_lengths)))
-
-    df_new[id_col] = [ids[seq_ix]
-                      for seq_ix in xrange(n_seqs) for i in xrange(seq_lengths[seq_ix])]
-    df_new[t_col] = [i for seq_ix in xrange(
-        n_seqs) for i in xrange(seq_lengths[seq_ix])]
-
-    df = pd.merge(df_new, df, how='outer', on=[id_col, t_col]).fillna(0)
-
-    return df
-
-
 def _align_padded(padded, align_right):
     """ (Internal function) Aligns nan-padded temporal arrays to the right (align_right=True) or left.
 
