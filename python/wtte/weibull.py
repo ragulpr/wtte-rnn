@@ -5,6 +5,7 @@ import numpy as np
 
 def cumulative_hazard(t, a, b):
     """ Cumulative hazard
+    
     :param t: Value
     :param a: Alpha
     :param b: Beta
