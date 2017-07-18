@@ -48,6 +48,15 @@ def output_lambda(x, init_alpha=1.0, max_beta_value=5.0, max_alpha_value=None):
             (regularization) Use max_beta_value to implicitly regularize the model
             (initialization) Fixed to begin moving slowly around 1.0
 
+        - Usage
+            .. code-block:: python
+
+                model.add(TimeDistributed(Dense(2)))
+                model.add(Lambda(wtte.output_lambda, arguments={"init_alpha":init_alpha, 
+                                                        "max_beta_value":2.0
+                                                       }))
+
+
         :param x: tensor with last dimension having length 2 with x[...,0] = alpha, x[...,1] = beta
         :param init_alpha: initial value of `alpha`. Default value is 1.0.
         :param max_beta_value: maximum beta value. Default value is 5.0.
@@ -90,8 +99,10 @@ def output_lambda(x, init_alpha=1.0, max_beta_value=5.0, max_alpha_value=None):
 
 
 class output_activation(object):
-    """ Elementwise computation of alpha and regularized beta using keras.layers.Activation.
-        Wrapper
+    """ Elementwise computation of alpha and regularized beta.
+
+        Object-Oriented Wrapper to `output_lambda` using keras.layers.Activation.
+
 
         - Usage
             .. code-block:: python
@@ -110,9 +121,9 @@ class output_activation(object):
 
     def activation(self, ab):
         """ (Internal function) Activation wrapper
-        
+
         :param ab: original tensor with alpha and beta.
-        :return ab: return of `output_lambda` with `init_alpha` and `max_beta_value`. 
+        :return ab: return of `output_lambda` with `init_alpha` and `max_beta_value`.
         """
         ab = output_lambda(ab, init_alpha=self.init_alpha,
                            max_beta_value=self.max_beta_value)

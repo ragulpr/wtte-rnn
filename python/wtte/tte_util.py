@@ -7,7 +7,6 @@ from six.moves import xrange
 
 # TODO
 # - Proper tests of everything
-# - naming in general.
 # - be clearer about meaning of t_elapsed, t_ix and either (t)
 # - Time Since Event is a ticking bomb. Needs better naming/definitions
 #   to ensure that it's either inverse TTE or a feature or if they coincide.
@@ -28,7 +27,7 @@ def roll_fun(x, size, fun=np.mean, reverse=False):
 
 
 def carry_forward_if(x, is_true):
-    """Locomote forward object x[i] if is_true[i].
+    """Locomote forward `x[i]` if `is_true[i]`.
         remain x untouched before first pos of truth.
 
         :param Array x: object whos elements are to carry forward
@@ -44,7 +43,7 @@ def carry_forward_if(x, is_true):
 
 
 def carry_backward_if(x, is_true):
-    """Locomote backward object x[i] if is_true[i].
+    """Locomote backward `x[i]` if `is_true[i]`.
         remain x untouched after last pos of truth.
 
         :param Array x: object whos elements are to carry backward
@@ -151,7 +150,7 @@ def get_tte_continuous(is_event, t_elapsed):
 
 
 def get_tte(is_event, discrete_time, t_elapsed=None):
-    """ wrapper to calculate Time To Event for input vector.
+    """ wrapper to calculate *Time To Event* for input vector.
 
         :param Boolean discrete_time: if `True`, use `get_tte_discrete`. If `False`, use `get_tte_continuous`.
     """
@@ -162,7 +161,7 @@ def get_tte(is_event, discrete_time, t_elapsed=None):
 
 
 def get_tse(is_event, t_elapsed=None):
-    """ Wrapper to calculate Time Since Event for input vector.
+    """ Wrapper to calculate *Time Since Event* for input vector.
 
         Inverse of tte. Safe to use as a feature.
         Always "continuous" method of calculating it.
@@ -172,7 +171,9 @@ def get_tse(is_event, t_elapsed=None):
         tse = 0 at first step
 
         :param Array is_event: Boolean array
-        :param IntArray t_elapsed: integer array with same length as `is_event` . If none, it will use `t_elapsed.max() - t_elapsed[::-1]`.
+        :param IntArray t_elapsed: None or integer array with same length as `is_event`.
+
+            * If none, it will use `t_elapsed.max() - t_elapsed[::-1]`.
 
         .. TODO::
         reverse-indexing is pretty slow and ugly and not a helpful template for implementing in other languages.
@@ -185,7 +186,7 @@ def get_tse(is_event, t_elapsed=None):
 
 
 def get_is_not_censored(is_event, discrete_time=True):
-    """ Calculates non-censoring indicator u
+    """ Calculates non-censoring indicator `u`.
 
         :param Boolean discrete_time: if `True`, last observation is conditionally censored.
     """
