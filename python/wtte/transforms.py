@@ -10,13 +10,17 @@ from .tte_util import get_is_not_censored
 from .tte_util import get_tte
 
 
-def df_to_array(df, column_names, nanpad_right=True, return_lists=False, id_col='id', t_col='t'):
-    """ converts flat pandas df `{id,t,col1,col2,..}` to array indexed `[id,t,col]`.
+def df_to_array(df, column_names, nanpad_right=True, return_lists=False,
+                id_col='id', t_col='t'):
+    """Converts flat pandas df with cols `id,t,col1,col2,..` to array indexed `[id,t,col]`. 
 
-    :param df: dataframe with columns
-      * `id`: Any type. A key for the sequence.
+    :param df: dataframe with columns:
+
+      * `id`: Any type. A unique key for the sequence.
+
       * `t`: integer. If `t` is a non-contiguous int vec per id then steps in
         between t's are padded with zeros.
+
       * `columns` in `column_names` (String list)
     :type df: Pandas dataframe
     :param Boolean nanpad_right: If `True`, sequences are `np.nan`-padded to `max_seq_len`
@@ -24,10 +28,13 @@ def df_to_array(df, column_names, nanpad_right=True, return_lists=False, id_col=
     :param_id_col: string column name for `id`
     :param t_col: string column name for `t`
     :return padded: With seqlen the max value of `t` per id
+
       * if nanpad_right & !return_lists:
         a numpy float array of dimension `[n_seqs,max_seqlen,n_features]`
+
       * if nanpad_right & return_lists:
         n_seqs numpy float sub-arrays of dimension `[max_seqlen,n_features]`
+
       * if !nanpad_right & return_lists:
         n_seqs numpy float sub-arrays of dimension `[seqlen,n_features]`
     """
@@ -73,14 +80,17 @@ def df_to_array(df, column_names, nanpad_right=True, return_lists=False, id_col=
 
 
 def df_to_padded(df, column_names, id_col='id', t_col='t'):
-    """pads pandas df to a numpy array of shape [n_seqs,max_seqlen,n_features].
-        see df_to_array for details
+    """pads pandas df to a numpy array of shape `[n_seqs,max_seqlen,n_features]`.
+        see `df_to_array` for details
     """
     return df_to_array(df, column_names, nanpad_right=True,
                        return_lists=False, id_col=id_col, t_col=t_col)
 
 
 def df_to_subarrays(df, column_names, id_col='id', t_col='t'):
+    """pads pandas df to subarrays of shape `[n_seqs][seqlen[s],n_features]`.
+        see `df_to_array` for details
+    """
     return df_to_array(df, column_names, nanpad_right=False,
                        return_lists=True, id_col=id_col, t_col=t_col)
 
@@ -98,8 +108,11 @@ def padded_to_df(padded, column_names, dtypes, ids=None, id_col='id', t_col='t')
     :param id_col: Column where `id` is located. Default value is `id`.
     :param t_col: Column where `t` is located. Default value is `t`.
     :return df: Dataframe with Columns
+
       *  `id` (Integer) or the value of `ids`
+
       *  `t` (Integer).
+
       A row in df is the t'th event for a `id` and has columns from `column_names`
     """
 
@@ -168,6 +181,8 @@ def padded_to_df(padded, column_names, dtypes, ids=None, id_col='id', t_col='t')
 
 def padded_events_to_tte(events, discrete_time, t_elapsed=None):
     """ computes (right censored) time to event from padded binary events.
+
+    For details see `tte_util.get_tte`
 
     :param Array events: Events array.
     :param Boolean discrete_time: `True` when applying discrete time scheme.
@@ -313,9 +328,10 @@ def df_join_in_endtime(df, constant_per_id_cols='id',
         :param constant_per_id_cols: identifying id and
                                    columns remaining constant per id&timestep
         :type constant_per_id_cols: String or String list
-        :param String abs_time_col: identifying the wall-clock column.
-        :param df[abs_time_cols]) abs_endtime: If none it's inferred.
-        :return pandas.dataframe df: pandas dataframe with a value
+        :param String abs_time_col: identifying the wall-clock column df[abs_time_cols].
+        :param df[abs_time_cols]) abs_endtime: The time to join in. If None it's inferred.
+        :type abs_endtime: None or same as df[abs_time_cols].values.
+        :return pandas.dataframe df: pandas dataframe where each `id` has rows at the endtime.
     """
     assert 't' not in df.columns.values, 'define elapsed time upstream'
 
@@ -349,6 +365,10 @@ def shift_discrete_padded_features(padded, fill=0):
     In the continuous case "2015-12-15 23.59" means exactly at
     "2015-12-15 23.59: 00000000".
 
+    TODO does not render in sphinx.
+    ::
+
+
     Discrete case
     t|dt                    |Event
     0|2015-12-15 00.00-23.59|1
@@ -377,6 +397,7 @@ def shift_discrete_padded_features(padded, fill=0):
     feature  |1|1|0|0|1|?|....
     TTE      |1|3|2|1|?|?|....
     Observed*|T|T|T|T|T|T|....
+
 
     Observed* = Do we have feature data at this time?
         In the discrete case:
