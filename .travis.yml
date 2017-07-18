@@ -16,7 +16,7 @@ before_install:
 
 # command to install dependencies
 install:
-  - pip install ./python/
+  - pip install './python/.[tf]'
 
 # command to run tests
 script:

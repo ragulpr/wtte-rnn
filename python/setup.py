@@ -15,10 +15,11 @@ setup(
         'pandas',
         'scipy',
         'six==1.10.0',
-        'tensorflow>=1.1.0',
     ],
     extras_require={
         'plot': ['matplotlib'],
+        'tf': ["tensorflow>=1.1.0"],
+        'tf_gpu': ["tensorflow-gpu>=1.1.0"]
     },
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
