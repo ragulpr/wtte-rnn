@@ -6,24 +6,23 @@ import numpy as np
 import pandas as pd
 from six.moves import xrange
 
-from .tte_util import get_tte, get_is_not_censored
+from .tte_util import get_is_not_censored
+from .tte_util import get_tte
 
 
 def df_to_array(df, column_names, nanpad_right=True, return_lists=False, id_col='id', t_col='t'):
     """ converts flat pandas df `{id,t,col1,col2,..}` to array indexed `[id,t,col]`.
 
     :param df: dataframe with columns
-      * `id`: integer
-      * `t`: integer
+      * `id`: Any type. A key for the sequence.
+      * `t`: integer. If `t` is a non-contiguous int vec per id then steps in
+        between t's are padded with zeros.
       * `columns` in `column_names` (String list)
-        Where rows in df are the t'th row for a id. Think user and t'th action.
-        If `t` is a non-contiguous int vec per id then steps in between t's
-        are padded with zeros.
     :type df: Pandas dataframe
-    :param Boolean nanpad_right: If `True`,  sequences are `np.nan-padded` to `max_seq_len`
-    :param return_lists:
-    :param_id_col: Column where `id` is located
-    :param t_col: Column where `t` is located
+    :param Boolean nanpad_right: If `True`, sequences are `np.nan`-padded to `max_seq_len`
+    :param return_lists: Put every tensor in its own subarray
+    :param_id_col: string column name for `id`
+    :param t_col: string column name for `t`
     :return padded: With seqlen the max value of `t` per id
       * if nanpad_right & !return_lists:
         a numpy float array of dimension `[n_seqs,max_seqlen,n_features]`
@@ -33,12 +32,12 @@ def df_to_array(df, column_names, nanpad_right=True, return_lists=False, id_col=
         n_seqs numpy float sub-arrays of dimension `[seqlen,n_features]`
     """
 
-    # df.sort_values(by=['id','t'], inplace=True)
-    # set the index to be this and don't drop
-    df.set_index(keys=[id_col], drop=False, inplace=True)
-    unique_ids = df[id_col].unique()
+    # Do not sort. Create a view.
+    grouped = df.groupby(id_col, sort=False)
 
-    n_seqs = len(unique_ids)
+    unique_ids = list(grouped.groups.keys())
+
+    n_seqs = grouped.ngroups
     n_features = len(column_names)
     seq_lengths = df[[id_col, t_col]].groupby(
         id_col).aggregate('max')[t_col].values + 1
@@ -50,6 +49,7 @@ def df_to_array(df, column_names, nanpad_right=True, return_lists=False, id_col=
 
     max_seq_len = seq_lengths.max()
 
+    # Initialize the array to be filled
     if return_lists:
         if nanpad_right:
             padded = np.split(np.zeros([n_seqs * max_seq_len, n_features]),
@@ -60,11 +60,12 @@ def df_to_array(df, column_names, nanpad_right=True, return_lists=False, id_col=
     else:
         padded = np.zeros([n_seqs, max_seq_len, n_features])
 
+    # Fill it
     for s in xrange(n_seqs):
         # df_user is a view
-        df_user = df.loc[df[id_col].values == unique_ids[s]]
+        df_group = grouped.get_group(unique_ids[s])
 
-        padded[s][np.array(df_user[t_col]), :] = df_user[column_names]
+        padded[s][df_group[t_col].values, :] = df_group[column_names].values
         if nanpad_right and seq_lengths[s] < max_seq_len:
             padded[s][seq_lengths[s]:, :].fill(np.nan)
 
@@ -88,7 +89,6 @@ def padded_to_df(padded, column_names, dtypes, ids=None, id_col='id', t_col='t')
     """takes padded numpy array and converts nonzero entries to pandas dataframe row.
 
     Inverse to df_to_padded.
-    TODO: Support mapping to non-contiguous t_col?
 
     :param padded: a numpy float array of dimension `[n_seqs,max_seqlen,n_features]`.
     :param column_names: other columns to expand from df
@@ -98,8 +98,8 @@ def padded_to_df(padded, column_names, dtypes, ids=None, id_col='id', t_col='t')
     :param id_col: Column where `id` is located. Default value is `id`.
     :param t_col: Column where `t` is located. Default value is `t`.
     :return df: Dataframe with Columns
-      *  `id` (Integer)
-      * `t` (Integer).
+      *  `id` (Integer) or the value of `ids`
+      *  `t` (Integer).
       A row in df is the t'th event for a `id` and has columns from `column_names`
     """
 
@@ -110,17 +110,19 @@ def padded_to_df(padded, column_names, dtypes, ids=None, id_col='id', t_col='t')
             j is the start or endpoint of a sequence i
         :type is_nonempty: Boolean Array
         """
+
         # If any nonzero element then nonempty:
         is_nonempty = (padded != 0).sum(2) != 0
-
-        # nan-mask is empty:
-        is_nonempty[np.isnan(padded.sum(2))] = False
 
         # first and last step in each seq is not empty
         # (has info about from and to)
         is_nonempty[:, 0] = True
 
+        seq_lengths = np.count_nonzero(~np.isnan(padded[:, :, 0]), axis=1)
         is_nonempty[xrange(n_seqs), seq_lengths - 1] = True
+
+        # nan-mask is always empty:
+        is_nonempty[np.isnan(padded.sum(2))] = False
 
         return is_nonempty
 
@@ -145,10 +147,9 @@ def padded_to_df(padded, column_names, dtypes, ids=None, id_col='id', t_col='t')
         return df
 
     if len(padded.shape) == 2:
-        padded = padded.reshape([padded.shape[0], padded.shape[1], 1])
+        padded = np.expand_dims(padded, -1)
 
     n_seqs, max_seq_length, n_features = padded.shape
-    seq_lengths = (np.isnan(padded).sum(2) == 0).sum(1).flatten()
 
     if ids is None:
         ids = xrange(n_seqs)
@@ -236,36 +237,6 @@ def padded_events_to_not_censored(events, discrete_time):
 
 #     print('Not yet implemented')
 #     return None
-
-
-def df_to_padded_df(df, id_col='id', t_col='t', abs_time_col='dt'):
-    """ zeropads a df between timesteps.
-        df with column
-         id, a column of id
-         t,      a column of (user/sequence) timestep
-         dt, TODO expand range
-         Expands each id to have to contiguous t=0,1,2..,and fills
-         NaNs with 0.
-    """
-    print('warning: not tested/working')
-    if abs_time_col in df.columns:
-        print(abs_time_col, ' filled with 0s :TODO')
-
-    seq_lengths = df[[id_col, t_col]].groupby(
-        id_col).aggregate('max')[t_col].values + 1
-    ids = np.unique(df.id.values)
-    n_seqs = len(ids)
-
-    df_new = pd.DataFrame(index=xrange(sum(seq_lengths)))
-
-    df_new[id_col] = [ids[seq_ix]
-                      for seq_ix in xrange(n_seqs) for i in xrange(seq_lengths[seq_ix])]
-    df_new[t_col] = [i for seq_ix in xrange(
-        n_seqs) for i in xrange(seq_lengths[seq_ix])]
-
-    df = pd.merge(df_new, df, how='outer', on=[id_col, t_col]).fillna(0)
-
-    return df
 
 
 def _align_padded(padded, align_right):
@@ -366,53 +337,71 @@ def df_join_in_endtime(df, constant_per_id_cols='id',
 
 
 def shift_discrete_padded_features(padded, fill=0):
-    """ Shift discrete padded features.
+    """
+    Feature cols : data available in realtime at timestamp
+    Target  cols : not known at timestamp
 
-        Feature cols : data available at timestamp
-        Target  cols : not known at timestamp
+    For mathematical purity and to avoid confusion, in the Discrete case
+    "2015-12-15" means an interval "2015-12-15 00.00 - 2015-12-15 23.59" i.e the data
+    is accessible at "2015-12-15 23.59"  (time when we query our database to
+    do prediction about next day.)
 
-        - discrete case
+    In the continuous case "2015-12-15 23.59" means exactly at
+    "2015-12-15 23.59: 00000000".
 
-            "event = 1 if event happens today"
-             at 2015-12-15 (00:00:00) we know n_commits..
-             to 2015-12-14 (23.59:59)
-            If no event until
-                2015-12-15 (23:59:59) then event = 0
-             at 2015-12-15 (23:59:59)
+    Discrete case
+    t|dt                    |Event
+    0|2015-12-15 00.00-23.59|1
+    1|2015-12-16 00.00-23.59|1
+    2|2015-12-17 00.00-23.59|0
+    etc
+    In detail:
+    t        |0|1|2|3|4|5|....
+    ---------------------|....
+    event    |1|1|0|0|1|?|....
+    feature  |?|1|1|0|0|1|....
+    TTE      |0|0|2|1|0|?|....
+    Observed*|F|T|T|T|T|T|....
 
-        - continuous case
+    Continuous case
+    t|dt              |Event
+    0|2015-12-15 14.39|1
+    1|2015-12-16 16.11|1
+    2|2015-12-17 22.18|0
+    etc
+    In detail:
 
-            "event =1 if event happens now"
-             at 2015-12-15 (00:00:00) we know n_commits..
-             to 2015-12-15 (00:00:00)
-            If no event at
-                2015-12-15 (00:00:00) then event = 0
-             at 2015-12-15 (00:00:00)
+    t        |0|1|2|3|4|5|....
+    ---------------------|....
+    event    |1|1|0|0|1|?|....
+    feature  |1|1|0|0|1|?|....
+    TTE      |1|3|2|1|?|?|....
+    Observed*|T|T|T|T|T|T|....
 
-        -> if_discrete we need to roll data intent as features to the right.
+    Observed* = Do we have feature data at this time?
+        In the discrete case:
+        -> we need to roll data intent as features to the right.
+          -> First timestep typically has no measured features (and we may not even
+          know until the end of the first interval if the sequence even exists!)
 
-        .. Note::
-            Consider this
-            As observed after the fact,
-                event   : [0,1,0,0,1]
-                feature : [0,1,2,3,4]
-            features and and target at t generated at [t,t+1)!
+        So there's two options after rolling features to the right:
+        1. Fill in 0s at t=0. (`shift_discrete_padded_features`)
+            note: if (data -> event) this is (randomly) leaky (potentially safe)
+            note: if (data <-> event) this exposes the truth (unsafe)!
+        2. Remove t=0 from target data
+            (dont learn to predict about prospective customers first purchase)
+            Safest!
+        note: We never have target data for the last timestep after rolling.
 
-            As observed in realtime and what to feed to model
-                event   : [0,1,0,0,1,?]
-                feature : [?,0,1,2,3,4] <- last timestep can predict but can't train
-            features at t generated at [t-1,t), target at t generated at [t,t+1)!
-              -> First timestep has no features (don't know what happened day before first day)
-                     fix: set it to 0
-              -> last timestep  has no target  (don't know what can happen today)
-                     fix: don't use it during training.
-
-            Unfortunately it usually makes sense to decide on fill-value after feature normalization so do it on padded values
+      Example:
+      Customer has first click leading to day 0 so at day 1 we can use
+      features about that click to predict time to purchase.
+      Since click does not imply purchase we can predict time to purchase
+      at step 0 (but with no feature data, ex using zeros as input).
     """
     padded = np.roll(padded, shift=1, axis=1)
     padded[:, 0] = fill
     return padded
-
 
 def normalize_padded(padded, means=None, stds=None):
     """ norm. by last dim of padded with norm.coef or get them.
@@ -430,7 +419,7 @@ def normalize_padded(padded, means=None, stds=None):
            * If events are sparse then this may lead to huge values.
     """
     # TODO epsilon choice is random
-    epsilon = 1e-8
+    epsilon = 1e-6
     original_dtype = padded.dtype
 
     is_flat = len(padded.shape) == 2
@@ -451,7 +440,7 @@ def normalize_padded(padded, means=None, stds=None):
         stds = np.nanstd(np.float128(
             padded.reshape(n_obs, n_features)), axis=0)
 
-    stds = means.reshape([1, 1, n_features])
+    stds = stds.reshape([1, 1, n_features])
     if (stds < epsilon).any():
         print('warning. Constant cols: ', np.where((stds < epsilon).flatten()))
         stds[stds < epsilon] = 1.0
