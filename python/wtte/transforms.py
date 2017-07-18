@@ -110,17 +110,19 @@ def padded_to_df(padded, column_names, dtypes, ids=None, id_col='id', t_col='t')
             j is the start or endpoint of a sequence i
         :type is_nonempty: Boolean Array
         """
+
         # If any nonzero element then nonempty:
         is_nonempty = (padded != 0).sum(2) != 0
-
-        # nan-mask is empty:
-        is_nonempty[np.isnan(padded.sum(2))] = False
 
         # first and last step in each seq is not empty
         # (has info about from and to)
         is_nonempty[:, 0] = True
 
+        seq_lengths = np.count_nonzero(~np.isnan(padded[:, :, 0]), axis=1)
         is_nonempty[xrange(n_seqs), seq_lengths - 1] = True
+
+        # nan-mask is always empty:
+        is_nonempty[np.isnan(padded.sum(2))] = False
 
         return is_nonempty
 
@@ -145,10 +147,9 @@ def padded_to_df(padded, column_names, dtypes, ids=None, id_col='id', t_col='t')
         return df
 
     if len(padded.shape) == 2:
-        padded = padded.reshape([padded.shape[0], padded.shape[1], 1])
+        padded = np.expand_dims(padded, -1)
 
     n_seqs, max_seq_length, n_features = padded.shape
-    seq_lengths = (np.isnan(padded).sum(2) == 0).sum(1).flatten()
 
     if ids is None:
         ids = xrange(n_seqs)
