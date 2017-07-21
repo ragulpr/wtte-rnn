@@ -23,7 +23,8 @@ def weibull_heatmap(
     is_discrete=True,
     resolution=None,
     xax_nbins=10,
-    yax_nbins=4
+    yax_nbins=4,
+    cmap='jet'
 ):
     """
         Adds a continuous or discrete heatmap with TTE to ax.
@@ -78,7 +79,7 @@ def weibull_heatmap(
         np.tile(b.reshape(n, 1), (1, resolution))
     )
 
-    ax.imshow(pred.T, origin='lower', interpolation='none', aspect='auto')
+    ax.imshow(pred.T, origin='lower', interpolation='none', aspect='auto', cmap=cmap)
     ax.set_yticks([x * (resolution + 0.0) /
                    max_horizon for x in [0, max_horizon / 2, max_horizon - 1]])
     ax.set_yticklabels([0, max_horizon / 2, max_horizon - 1])
@@ -116,8 +117,8 @@ def weibull_heatmap(
                                label='time_to_event')
         if not all(~is_censored):
             ax_add_scaled_line(ax,
-                               t[is_censored],
-                               time_to_event[is_censored],
+                               t,
+                               time_to_event,
                                y_value_max=max_horizon,
                                y_n_pixels=resolution,
                                drawstyle=drawstyle,
