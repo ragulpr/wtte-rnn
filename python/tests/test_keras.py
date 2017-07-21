@@ -35,7 +35,8 @@ def test_keras_unstack_hack():
 def get_data(discrete_time):
     y_test, y_train, u_train = generate_weibull(A=real_a,
                                                 B=real_b,
-                                                C=censoring_point,  # <np.inf -> impose censoring
+                                                # <np.inf -> impose censoring
+                                                C=censoring_point,
                                                 shape=[n_sequences,
                                                        n_timesteps, 1],
                                                 discrete_time=discrete_time)
@@ -157,23 +158,25 @@ def test_output_lambda_initialization():
     # Initializing beta =1 gives us a simple initialization rule for alpha.
     # it also makes sense considering it initializes the hazard to flat
     # and in general as a regular exponential regression model.
-
     init_alpha = 5
     n_features = 1
     n_timesteps = 10
+    n_sequences = 5
     np.random.seed(1)
 
     model = Sequential()
 
-    model.add(TimeDistributed(Dense(5, activation='tanh'),
-                              input_shape=(n_timesteps, n_features)))
-
+    # Identity layer
+    model.add(Lambda(lambda x: x, input_shape=(n_timesteps, n_features)))
     model.add(Dense(2))
-    model.add(Lambda(wtte.output_lambda, arguments={"init_alpha": init_alpha,
-                                                    "max_beta_value": 4.
-                                                    }))
+    model.add(Lambda(wtte.output_lambda,
+                     arguments={"init_alpha": init_alpha,
+                                "max_beta_value": 4.,
+                                "alpha_kernel_scalefactor": 1.
+                                }))
 
-    x = np.random.normal(0, .01, size=[5, n_timesteps, n_features])
+    # Test
+    x = np.random.normal(0, 0.01, size=[n_sequences, n_timesteps, n_features])
     predicted = model.predict(x)
 
     # Check that it initializes +- 0.1 from init_alpha,beta=1

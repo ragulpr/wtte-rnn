@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import warnings
 from keras import backend as K
 import numpy as np
 
@@ -23,7 +24,8 @@ def _keras_unstack_hack(ab):
     return a, b
 
 
-def output_lambda(x, init_alpha=1.0, max_beta_value=5.0, max_alpha_value=None):
+def output_lambda(x, init_alpha=1.0, max_beta_value=5.0,
+                  alpha_kernel_scalefactor=None):
     """Elementwise (Lambda) computation of alpha and regularized beta.
 
         - Alpha:
@@ -69,14 +71,22 @@ def output_lambda(x, init_alpha=1.0, max_beta_value=5.0, max_alpha_value=None):
         :rtype: Array
 
     """
+    if max_beta_value is None or max_beta_value > 3:
+        if K.epsilon() <= 1e-07 and K.backend() == 'tensorflow':
+            message = "\
+            Using tensorflow backend and allowing high `max_beta_value` may lead to\n\
+            gradient NaN during training unless `K.epsilon()` is small.\n\
+            Call `keras.backend.set_epsilon(1e-08)` to lower epsilon \
+            "
+            warnings.warn(message)
+
     a, b = _keras_unstack_hack(x)
 
     # Implicitly initialize alpha:
-    if max_alpha_value is None:
+    if alpha_kernel_scalefactor is None:
         a = init_alpha * K.exp(a)
     else:
-        a = init_alpha * K.clip(x=a, min_value=K.epsilon(),
-                                max_value=max_alpha_value)
+        a = init_alpha * K.exp(alpha_kernel_scalefactor*a)
 
     m = max_beta_value
     if m > 1.05:  # some value >>1.0
