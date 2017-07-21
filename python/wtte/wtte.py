@@ -3,8 +3,10 @@ from __future__ import division
 from __future__ import print_function
 
 import warnings
-from keras import backend as K
 import numpy as np
+
+from keras import backend as K
+from keras.callbacks import Callback
 
 
 def _keras_unstack_hack(ab):
@@ -241,3 +243,132 @@ class loss(object):
             loss = -loglikelihoods
 
         return loss
+
+
+class WeightWatcher(Callback):
+    """Keras Callback to keep an eye on output layer weights.
+        (under development)
+
+        Usage:
+            weightwatcher = WeightWatcher(per_batch=True,per_epoch=False)
+            model.fit(...,callbacks=[weightwatcher])
+            weightwatcher.plot()
+    """
+
+    def __init__(self,
+                 per_batch=True,
+                 per_epoch=False
+                 ):
+        self.per_batch = per_batch
+        self.per_epoch = per_epoch
+
+    def on_train_begin(self, logs={}):
+        self.a_weights_mean = []
+        self.b_weights_mean = []
+        self.a_weights_min = []
+        self.b_weights_min = []
+        self.a_weights_max = []
+        self.b_weights_max = []
+        self.a_bias = []
+        self.b_bias = []
+
+    def append_metrics(self):
+        output_weights, output_biases = self.model.get_weights()[-2:]
+
+        a_weights_mean, b_weights_mean = output_weights.mean(0)
+        a_weights_min, b_weights_min = output_weights.min(0)
+        a_weights_max, b_weights_max = output_weights.max(0)
+
+        a_bias, b_bias = output_biases
+
+        self.a_weights_mean.append(a_weights_mean)
+        self.b_weights_mean.append(b_weights_mean)
+        self.a_weights_min.append(a_weights_min)
+        self.b_weights_min.append(b_weights_min)
+        self.a_weights_max.append(a_weights_max)
+        self.b_weights_max.append(b_weights_max)
+        self.a_bias.append(a_bias)
+        self.b_bias.append(b_bias)
+
+    def on_train_end(self, logs={}):
+        if self.per_epoch:
+            self.append_metrics()
+        return
+
+    def on_epoch_begin(self, epoch, logs={}):
+        if self.per_epoch:
+            self.append_metrics()
+        return
+
+    def on_epoch_end(self, epoch, logs={}):
+        return
+
+    def on_batch_begin(self, batch, logs={}):
+        if self.per_batch:
+            self.append_metrics()
+        return
+
+    def on_batch_end(self, batch, logs={}):
+        if self.per_batch:
+            self.append_metrics()
+        return
+
+    def plot(self):
+        import matplotlib.pyplot as plt
+
+        # Create axes
+        fig, ax1 = plt.subplots()
+        ax2 = ax1.twinx()
+
+        ax1.plot(self.a_bias, color='b')
+        ax1.set_xlabel('step')
+        ax1.set_ylabel('alpha')
+
+        ax2.plot(self.b_bias, color='r')
+        ax2.set_ylabel('beta')
+
+        # Change color of each axis
+        def color_y_axis(ax, color):
+            """Color your axes."""
+            for t in ax.get_yticklabels():
+                t.set_color(color)
+            return None
+
+        plt.title('biases')
+        color_y_axis(ax1, 'b')
+        color_y_axis(ax2, 'r')
+        plt.show()
+
+        ###############
+        fig, ax1 = plt.subplots()
+        ax2 = ax1.twinx()
+
+        ax1.plot(self.a_weights_min, color='blue',
+                 linestyle='dotted', label='min', linewidth=2)
+        ax1.plot(self.a_weights_mean, color='blue',
+                 linestyle='solid', label='mean', linewidth=1)
+        ax1.plot(self.a_weights_max, color='blue',
+                 linestyle='dotted', label='max', linewidth=2)
+
+        ax1.set_xlabel('step')
+        ax1.set_ylabel('alpha')
+
+        ax2.plot(self.b_weights_min, color='red',
+                 linestyle='dotted', linewidth=2)
+        ax2.plot(self.b_weights_mean, color='red',
+                 linestyle='solid', linewidth=1)
+        ax2.plot(self.b_weights_max, color='red',
+                 linestyle='dotted', linewidth=2)
+        ax2.set_ylabel('beta')
+
+        # Change color of each axis
+        def color_y_axis(ax, color):
+            """Color your axes."""
+            for t in ax.get_yticklabels():
+                t.set_color(color)
+            return None
+
+        plt.title('weights (min,mean,max)')
+        color_y_axis(ax1, 'b')
+        color_y_axis(ax2, 'r')
+        plt.show()
