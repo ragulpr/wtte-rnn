@@ -10,13 +10,16 @@ build_requires = [
 test_requires = [
     'pytest',
     'pytest-runner',
-    'sphinx',
-    'sphinx-rtd-theme',
     'flake8',
 ]
 
 dev_requires = [
     'pytest-sugar',
+]
+
+docs_requires = [
+    'sphinx',
+    'sphinx-rtd-theme',
 ]
 
 setup(
@@ -41,6 +44,7 @@ setup(
         'build': build_requires,
         'test': test_requires,
         'dev': dev_requires,
+        'docs': docs_requires,
     },
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
