@@ -1,6 +1,24 @@
 from setuptools import setup
 from setuptools import find_packages
 
+
+build_requires = [
+    'wheel',
+    'twine',
+]
+
+test_requires = [
+    'pytest',
+    'pytest-runner',
+    'sphinx',
+    'sphinx-rtd-theme',
+    'flake8',
+]
+
+dev_requires = [
+    'pytest-sugar',
+]
+
 setup(
     name='wtte',
     version='0.0.2',
@@ -20,6 +38,9 @@ setup(
         'plot': ['matplotlib'],
         'tf': ["tensorflow>=1.1.0"],
         'tf_gpu': ["tensorflow-gpu>=1.1.0"]
+        'build': build_requires,
+        'test': test_requires,
+        'dev': dev_requires,
     },
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
