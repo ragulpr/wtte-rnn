@@ -1,0 +1,3 @@
+# this is to be executed in RTD servers,
+# where the current working directory is fixed to the repository root.
+-e python[tf,docs]
