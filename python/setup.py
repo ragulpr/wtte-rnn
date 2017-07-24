@@ -18,10 +18,12 @@ test_requires = [
 # Used in developers' PCs only
 dev_requires = [
     'pytest-sugar',
+    'sphinx',
     'sphinx-rtd-theme',
 ]
 
 # Used in ReadTheDocs build servers
+# (actually they already have Sphinx, but let's specify it explicitly.)
 docs_requires = [
     'sphinx',
 ]

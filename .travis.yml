@@ -18,5 +18,6 @@ install:
   - cd python && pip install -r requirements-ci.txt
 
 # command to run tests
+# (we are already in "python" directory here)
 script:
-  - cd python && python -m pytest tests/
+  - python -m pytest tests/
