@@ -2,24 +2,28 @@ from setuptools import setup
 from setuptools import find_packages
 
 
+# Used in CI and by deveopers
 build_requires = [
     'wheel',
     'twine',
 ]
 
+# Used in CI and by deveopers
 test_requires = [
     'pytest',
     'pytest-runner',
     'flake8',
 ]
 
+# Used in developers' PCs only
 dev_requires = [
     'pytest-sugar',
+    'sphinx-rtd-theme',
 ]
 
+# Used in ReadTheDocs build servers
 docs_requires = [
     'sphinx',
-    'sphinx-rtd-theme',
 ]
 
 setup(
