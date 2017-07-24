@@ -112,7 +112,7 @@ class TestCensoringFuns:
         times_to_event = padded_events_to_tte(events_d, discrete_time=True)
         not_censored = padded_events_to_not_censored(events_d,
                                                      discrete_time=True)
-
+ 
         assert (expected_tte_d == times_to_event).all(), '  time_to_event failed'
         assert (expected_is_censored_d != not_censored).all(), 'not_censored failed'
 
@@ -121,7 +121,7 @@ class TestCensoringFuns:
         times_to_event = padded_events_to_tte(events_c, discrete_time=False)
         not_censored = padded_events_to_not_censored(events_c,
                                                      discrete_time=False)
-
+ 
         assert (expected_tte_c == times_to_event).all(), '  time_to_event failed'
         assert (expected_is_censored_c != not_censored).all(), 'not_censored failed'
 
