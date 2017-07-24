@@ -14,7 +14,7 @@ python:
 
 # command to install dependencies
 install:
-  - pip install --U pip setuptools
+  - pip install --upgrade pip setuptools
   - cd python && pip install -r requirements-ci.txt
 
 # command to run tests
