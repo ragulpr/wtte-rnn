@@ -9,6 +9,22 @@ from six.moves import xrange
 from .tte_util import get_is_not_censored
 from .tte_util import get_tte
 
+def get_padded_seq_lengths(padded):
+    """Returns the number of conecutive non-nan elements per sequence.
+
+    :param padded: 2d or 3d tensor with dim 2 the time dimension
+    """
+    if len(padded.shape) == 2:
+        # (n_seqs,n_timesteps)
+        seq_lengths = np.count_nonzero(~np.isnan(padded), axis=1)
+    elif len(padded.shape) == 3:
+        # (n_seqs,n_timesteps,n_features,..)
+        seq_lengths = np.count_nonzero(~np.isnan(padded[:, :, 0]), axis=1)
+    else:
+        print('not yet implemented')
+        # TODO
+
+    return seq_lengths
 
 def df_to_array(df, column_names, nanpad_right=True, return_lists=False,
                 id_col='id', t_col='t'):
@@ -131,7 +147,8 @@ def padded_to_df(padded, column_names, dtypes, ids=None, id_col='id', t_col='t')
         # (has info about from and to)
         is_nonempty[:, 0] = True
 
-        seq_lengths = np.count_nonzero(~np.isnan(padded[:, :, 0]), axis=1)
+        seq_lengths = get_padded_seq_lengths(padded)
+
         is_nonempty[xrange(n_seqs), seq_lengths - 1] = True
 
         # nan-mask is always empty:
@@ -189,7 +206,7 @@ def padded_events_to_tte(events, discrete_time, t_elapsed=None):
     :param Array t_elapsed: Elapsed time. Default value is `None`.
     :return Array time_to_events: Time-to-event tensor.
     """
-    seq_lengths = np.count_nonzero(~np.isnan(events), axis=1)
+    seq_lengths = get_padded_seq_lengths(events)
     n_seqs = len(events)
 
     times_to_event = np.zeros_like(events)
@@ -230,7 +247,7 @@ def padded_events_to_not_censored_vectorized(events):
 
 
 def padded_events_to_not_censored(events, discrete_time):
-    seq_lengths = np.count_nonzero(~np.isnan(events), axis=1)
+    seq_lengths = get_padded_seq_lengths(events)
     n_seqs = events.shape[0]
     is_not_censored = np.copy(events)
 
@@ -262,16 +279,16 @@ def _align_padded(padded, align_right):
     """
     padded = np.copy(padded)
 
+    seq_lengths = get_padded_seq_lengths(padded)
     if len(padded.shape) == 2:
         # (n_seqs,n_timesteps)
-        seq_lengths = np.count_nonzero(~np.isnan(padded), axis=1)
         is_flat = True
         padded = np.expand_dims(padded, -1)
     elif len(padded.shape) == 3:
-        # (n_seqs,n_timesteps,n_features,..)
-        seq_lengths = np.count_nonzero(~np.isnan(padded[:, :, 0]), axis=1)
+        # (n_seqs,n_timesteps,n_features)
         is_flat = False
     else:
+        # (n_seqs,n_timesteps,...,n_features)
         print('not yet implemented')
         # TODO
 
@@ -333,7 +350,6 @@ def df_join_in_endtime(df, constant_per_id_cols='id',
         :type abs_endtime: None or same as df[abs_time_cols].values.
         :return pandas.dataframe df: pandas dataframe where each `id` has rows at the endtime.
     """
-    assert 't' not in df.columns.values, 'define elapsed time upstream'
 
     if type(constant_per_id_cols) is not list:
         constant_per_id_cols = [constant_per_id_cols]
