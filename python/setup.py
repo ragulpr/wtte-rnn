@@ -44,7 +44,7 @@ setup(
     extras_require={
         'plot': ['matplotlib'],
         'tf': ["tensorflow>=1.1.0"],
-        'tf_gpu': ["tensorflow-gpu>=1.1.0"]
+        'tf_gpu': ["tensorflow-gpu>=1.1.0"],
         'build': build_requires,
         'test': test_requires,
         'dev': dev_requires,
