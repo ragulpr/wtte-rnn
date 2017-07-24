@@ -302,7 +302,7 @@ def run_apidoc(_):
     from sphinx.apidoc import main
     cur_dir = os.path.abspath(os.path.dirname(__file__))
     module_dir = os.path.join(root_dir, 'python/wtte')
-    main(['-e', '-o', cur_dir, module_dir, '--force'])
+    main(['-M', '-l', '-o', cur_dir, module_dir, '--force'])
 
 def setup(app):
     app.connect('builder-inited', run_apidoc)
