@@ -37,12 +37,12 @@ what's called *censored data* (in red):
 Instead of predicting the TTE itself the trick is to let your machine learning model
 output the *parameters of a distribution*.  This could be anything but we like the
 *Weibull distribution* because it's
-[awesome](https://ragulpr.github.io/2016/12/22/WTTE-RNN-Hackless-churn-modeling/#embrace-the-weibull-euphoria).
+[awesome](https://ragulpr.github.io/2016/12/22/WTTE-RNN-Hackless-churn-modeling/#embrace-the-Weibull-euphoria).
 The machine learning algorithm could be anything gradient-based but we like RNNs
 because they are [awesome](http://karpathy.github.io/2015/05/21/rnn-effectiveness/)
 too.
 
-![example WTTE-RNN architecture](./readme_figs/fig_rnn_weibull.png)
+![example WTTE-RNN architecture](./readme_figs/fig_rnn_Weibull.png)
 
 The next step is to train the algo of choice with a special log-loss that can work
 with censored data. The intuition behind it is that we want to assign high
@@ -91,7 +91,7 @@ Currently implemented in python/numpy:
     * tensorflow
     * keras
 * Layers
-    * weibull output layer in keras
+    * Weibull output layer in keras
 
 
 # Status and Roadmap
@@ -119,7 +119,7 @@ various ML-projects.
 ## Auxiliary
 
 To use the model one needs basic tte-transforms of raw data.  To consume the models we
-need weibull related functions for the final output.
+need Weibull related functions for the final output.
 
 * Ready to run helper functions implemented in SQL, R, Python.
 
