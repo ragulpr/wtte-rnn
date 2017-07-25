@@ -42,7 +42,7 @@ The machine learning algorithm could be anything gradient-based but we like RNNs
 because they are [awesome](http://karpathy.github.io/2015/05/21/rnn-effectiveness/)
 too.
 
-![example WTTE-RNN architecture](./readme_figs/fig_rnn_Weibull.png)
+![example WTTE-RNN architecture](./readme_figs/fig_rnn_weibull.png)
 
 The next step is to train the algo of choice with a special log-loss that can work
 with censored data. The intuition behind it is that we want to assign high

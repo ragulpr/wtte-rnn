@@ -22,7 +22,7 @@ WTTE-RNN은 이러한 문제가 어떻게 다루어져야 하는가에 대한 �
 
 [파이썬 패키지를 위한 README](python/README.md)를 확인하세요.
 
-너무 어렵다고 생각하신다면, 기본적인 구현은 [jupyter notebook](examples/keras/standalone_simple_example.ipynb) 의 각 줄에서 확인하실 수 있습니다.
+필요없는 내용이 너무 많다고 생각하신다면, 기본적인 구현은 [jupyter notebook](examples/keras/standalone_simple_example.ipynb) 의 각 줄에서 확인하실 수 있습니다.
 
 # 아이디어 및 기본 개념
 
@@ -30,28 +30,20 @@ WTTE-RNN은 이러한 문제가 어떻게 다루어져야 하는가에 대한 �
 
 ![중도절단된 데이터](./readme_figs/data.gif)
 
-일종의 트릭으로, TTE 자체를 예측하는 대신 기계 학습 모델이 *확률 분포의 매개 변수* 를 출력하도록 해 봅시다. 어떤 확률 분포도 가능합니다만, 그 [굉장함](https://ragulpr.github.io/2016/12/22/WTTE-RNN-Hackless-churn-modeling/#embrace-the-Weibull-euphoria) 때문에 *Weibull 분포* 를 좋아하므로 사용했습니다. 기계 학습 알고리즘또한 그래디언트 기반의 임의의 알고리즘이 될 수 있습니다만, 우리가 그 [굉장함](http://karpathy.github.io/2015/05/21/rnn-effectiveness/)때문에 RNN을 좋아하므로 RNN을 선택했습니다.
+일종의 트릭으로, TTE 자체를 예측하는 대신 기계 학습 모델이 *확률 분포의 매개 변수* 를 출력하도록 해 봅시다. 어떤 확률 분포도 가능합니다만, 그 [굉장함](https://ragulpr.github.io/2016/12/22/WTTE-RNN-Hackless-churn-modeling/#embrace-the-Weibull-euphoria) 때문에 *Weibull 분포* 를 좋아하므로 사용했습니다. 기계 학습 알고리즘 또한 그래디언트 기반의 임의의 알고리즘이 될 수 있습니다만, 우리가 그 [굉장함](http://karpathy.github.io/2015/05/21/rnn-effectiveness/)때문에 RNN을 좋아하므로 RNN을 선택했습니다.
 
 
-![WTTE-RNN 구조 예제](./readme_figs/fig_rnn_Weibull.png)
-
-The next step is to train the algo of choice with a special log-loss that can work
-with censored data. The intuition behind it is that we want to assign high
-probability at the *next* event or low probability where there *wasn't* any events
-(censored data):
+![WTTE-RNN 구조 예제](./readme_figs/fig_rnn_weibull.png)
 
 다음 단계는 중도절단된 데이터에도 적용할 수 있는 특수한 log-loss 알고리즘을 선택해 훈련시키는 것입니다. 그 배경이 되는 직관은, *다음* 에 발생할 이벤트 시점에 높은 확률을 할당하거나, (중도절단된 데이터의 경우) 이벤트가 발생하지 *않을* 시점에 낮은 확률을 할당하고 싶다는 것입니다.
 
 ![시간축에 따른 WTTE-RNN 예측](./readme_figs/solution_beta_2.gif)
 
-What we get is a pretty neat prediction about the *distribution of the TTE* in each
-step (here for a single event):
-
 그 결과로 우리는 각 단계에서 *TTE의 분포* 에 대한 꽤 깔끔한 예측을 얻습니다 (아래는 단일 이벤트에 대한 것입니다):
 
 ![WTTE-RNN prediction](./readme_figs/it_61786_pmf_151.png)
 
-다른 재미있는 결과는, 예측된 매개 변수들이 이벤트 *얼마나 빨리* (알파, alpha) 일어나고, *얼마나 확실하게* (베타, beta) 일어날지에 대한 예측을 시각화하고 그룹화하는 데 사용할 수있는 2차원 임베딩이라는 것입니다. 예측한 알파 (왼쪽)와 베타 (오른쪽)의 시간축을 쌓으면 다음과 같습니다.
+다른 재미있는 결과는, 예측된 매개 변수들이 이벤트 *얼마나 빨리* (알파, alpha) 일어나고, *얼마나 확실하게* (베타, beta) 일어날 지에 대한 예측을 시각화하고 그룹화하는 데 사용할 수 있는 2차원 임베딩이라는 것입니다. 예측한 알파 (왼쪽)와 베타 (오른쪽)의 시간축을 쌓으면 다음과 같습니다.
 
 ![WTTE-RNN alphabeta.png](./readme_figs/alphabeta.png)
 
