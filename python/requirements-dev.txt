@@ -1,5 +1,1 @@
--r requirements.txt
-pytest
-pytest-runner
-sphinx
-sphinx-rtd-theme
+-e .[build,test,dev]

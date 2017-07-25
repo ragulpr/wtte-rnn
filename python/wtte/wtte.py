@@ -256,8 +256,8 @@ class WeightWatcher(Callback):
     """
 
     def __init__(self,
-                 per_batch=True,
-                 per_epoch=False
+                 per_batch=False,
+                 per_epoch=True
                  ):
         self.per_batch = per_batch
         self.per_epoch = per_epoch
@@ -273,6 +273,8 @@ class WeightWatcher(Callback):
         self.b_bias = []
 
     def append_metrics(self):
+        # Last two weightlayers in model
+
         output_weights, output_biases = self.model.get_weights()[-2:]
 
         a_weights_mean, b_weights_mean = output_weights.mean(0)

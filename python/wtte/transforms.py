@@ -326,7 +326,8 @@ def left_pad_to_right_pad(padded):
 
 def df_join_in_endtime(df, constant_per_id_cols='id',
                        abs_time_col='dt',
-                       abs_endtime=None):
+                       abs_endtime=None,
+                       fill_zeros=False):
     """ Join in NaN-rows at timestep of when we stopped observing non-events.
 
         If we have a dataset consisting of events recorded until a fixed
@@ -348,8 +349,15 @@ def df_join_in_endtime(df, constant_per_id_cols='id',
         :param String abs_time_col: identifying the wall-clock column df[abs_time_cols].
         :param df[abs_time_cols]) abs_endtime: The time to join in. If None it's inferred.
         :type abs_endtime: None or same as df[abs_time_cols].values.
+        :param bool fill_zeros : Whether to attempt to fill NaN with zeros after merge.
         :return pandas.dataframe df: pandas dataframe where each `id` has rows at the endtime.
     """
+    risky_columns = list(set(['t_elapsed', 't', 't_ix']) & set(df.columns.values))
+    if len(risky_columns):
+        print('Warning: df has columns ',
+              risky_columns,
+              ', call `df_join_in_endtime` before calculating any relative time.',
+              '( otherwise they will be replaced at last step ) ')
 
     if type(constant_per_id_cols) is not list:
         constant_per_id_cols = [constant_per_id_cols]
@@ -361,7 +369,16 @@ def df_join_in_endtime(df, constant_per_id_cols='id',
 
     df_ids[abs_time_col] = abs_endtime
 
-    df = pd.merge(df_ids, df, how='outer')
+    if fill_zeros:
+        old_dtypes = df.dtypes.values
+        cols = df.columns
+
+        df = pd.merge(df_ids, df, how='outer').fillna(0)
+
+        for i in xrange(len(old_dtypes)):
+            df[cols[i]] = df[cols[i]].astype(old_dtypes[i])
+    else:
+        df = pd.merge(df_ids, df, how='outer')
 
     df = df.sort_values(by=[constant_per_id_cols[0], abs_time_col])
 
