@@ -78,34 +78,29 @@ probability of censoring instead of tte. A type of overfitting/artifact learning
 Global features can have this effect if not properly treated.
 
 
-# Repo
-
-Currently implemented in python/numpy:
-
-* Transformations
-    * data pipeline transformations (pandas `DataFrame` of expected format to numpy)
-    * time to event and censoring indicator calculations
-* Weibull functions (cdf,pdf,quantile,mean etc)
-
-* Objective functions
-    * tensorflow
-    * keras
-* Layers
-    * Weibull output layer in keras
-
-
 # Status and Roadmap
 
-The project is on the TODO-state.  The goal is to create a forkable and easily
+The project is under development.  The goal is to create a forkable and easily
 deployable model framework.  WTTE-RNN is the algorithm, churn_watch is the deployment
 - an opinionated idea about how churn-monitoring and reporting can be made beautiful
 and easy.  Pull-requests, recommendations, comments and contributions very welcome.
 
-## Implementations of the objective functions
+## What's in the repository
 
-The core technology is the objective functions.  These can be used with any
-machine-learning algorithm.  To spread the word we should implement and commit them to
-various ML-projects.
+* Transformations
+  - Data pipeline transformations (`pandas.DataFrame` of expected format to numpy)
+  - Time to event and censoring indicator calculations
+* Weibull functions (cdf, pdf, quantile, mean etc)
+* Objective functions written for:
+  - Tensorflow
+  - Keras
+* Layers
+  - Weibull output layer in Keras
+
+## Multi-framework support
+
+The core technology is the objective functions.
+We plan to make them to be reusable with any machine-learning frameworks.
 
 * TensorFlow ✔
 * Keras (TensorFlow wrapper) ✔
@@ -116,7 +111,7 @@ various ML-projects.
 * scikitFlow
 * MLlib
 
-## Auxiliary
+## Model input and output
 
 To use the model one needs basic tte-transforms of raw data.  To consume the models we
 need Weibull related functions for the final output.
@@ -141,10 +136,10 @@ The WTTE-RNN is as much an ML-algorithm as a visual language to talk about this 
 
 ```
 @MastersThesis{martinsson:Thesis:2016,
-    author     =     {Egil Martinsson},
-    title     =     {WTTE-RNN : Weibull Time To Event Recurrent Neural Network},
-    school     =     {Chalmers University Of Technology},
-    year     =     {2016},
+    author = {Egil Martinsson},
+    title  = {{WTTE-RNN : Weibull Time To Event Recurrent Neural Network}},
+    school = {Chalmers University Of Technology},
+    year   = {2016},
 }
 ```
 

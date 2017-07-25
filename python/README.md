@@ -14,22 +14,7 @@ WTTE-RNN is an algorithm and a philosophy about how this should be done.
 * Quick visual intro to the [model](https://imgur.com/a/HX4KQ)
 
 
-## Licensing
-
-* MIT License
-
-## Citation
-
-```
-@MastersThesis{martinsson:Thesis:2016,
-    author = {Egil Martinsson},
-    title  = {{WTTE-RNN : Weibull Time To Event Recurrent Neural Network}},
-    school = {Chalmers University Of Technology},
-    year   = {2016},
-}
-```
-
-## Installation
+# Installation
 
 Install via PyPI.
 We recommend updating pip/setuptools first.
@@ -56,14 +41,35 @@ In `extras` you may specify the followings:
 
 ## Development
 
+Follow the below instructions.
+Change `tf` to `tf_gpu` if your machine has CUDA GPUs.
+
 ```console
-$ git clone <this-repo>
+$ git clone $thisrepo
 $ cd ./wtte-rnn/python/
-$ pip install -U pip setuptools wheel
-$ pip install -e .[build,test,dev]
+$ pip install -U pip setuptools
+$ pip install -r requirements-dev.txt
+$ pip install -e .[build,test,dev,tf]
+```
+
+
+# Licensing
+
+* MIT License
+
+## Citation
+
+```
+@MastersThesis{martinsson:Thesis:2016,
+    author = {Egil Martinsson},
+    title  = {{WTTE-RNN : Weibull Time To Event Recurrent Neural Network}},
+    school = {Chalmers University Of Technology},
+    year   = {2016},
+}
 ```
 
 ## Contributing
 
 Reach out to egil.martinsson[at]gmail.com if you have any questions.
 Contributions/PR/Comments etc are very welcome!
+
