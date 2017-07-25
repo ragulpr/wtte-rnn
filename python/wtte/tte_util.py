@@ -12,6 +12,8 @@ from six.moves import xrange
 #   to ensure that it's either inverse TTE or a feature or if they coincide.
 
 def roll_fun(x, size, fun=np.mean, reverse=False):
+    """Like cumsum but with any function `fun`. 
+    """
     y = np.copy(x)
     n = len(x)
     size = min(size, n)
@@ -59,7 +61,7 @@ def carry_backward_if(x, is_true):
 
 
 def steps_since_true_minimal(is_event):
-    """(Time) since event over discrete (padded) events.
+    """(Time) since event over discrete (padded) event vector.
 
         :param Array is_event: a vector of 0/1s or boolean
         :return Array x: steps since is_event was true
@@ -75,7 +77,7 @@ def steps_since_true_minimal(is_event):
 
 
 def steps_to_true_minimal(is_event):
-    """(Time) to event for discrete (padded) events.
+    """(Time) to event for discrete (padded) event vector.
 
         :param Array is_event: a vector of 0/1s or boolean
         :return Array x: steps until is_event is true
@@ -100,7 +102,7 @@ def get_tte_discrete(is_event, t_elapsed=None):
 
         - Caveats
             tte[i] = numb. timesteps to timestep with event
-            Step of event has tte = 0
+            Step of event has tte = 0 \
            (event happened at time [t,t+1))
             tte[-1]=1 if no event (censored data)
     """
@@ -186,8 +188,9 @@ def get_tse(is_event, t_elapsed=None):
 
 
 def get_is_not_censored(is_event, discrete_time=True):
-    """ Calculates non-censoring indicator `u`.
+    """ Calculates non-censoring indicator `u` for one vector.
 
+        :param array is_event: logical or numeric array indicating event.
         :param Boolean discrete_time: if `True`, last observation is conditionally censored.
     """
     n = len(is_event)

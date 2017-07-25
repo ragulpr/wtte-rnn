@@ -22,15 +22,21 @@ def data_pipeline(
         time_sec_interval=60 * 60 * 24,
         timestep_aggregation_dict=None,
         drop_last_timestep=True):
-    """ preprocesses dataframe and puts it in padded tensor format.
+    """Preprocess dataframe and return it in padded tensor format.
 
         This function is due to change alot.
 
-        This outputs tensor as is and leave it to downstream to define events and from that
-        censoring-indicator and tte. There's many manipulations to do inbetween.
+        1. Lowers the resolution of the (int) `abs_time_col` ex from epoch sec to epoch day by aggregating\
+          each column using `timestep_aggregation_dict`.
 
+        2. Padds out with zeros between timesteps and fills with value of `constant_cols`.
+
+        3. Infers or adds/fills an endtime.
+
+        This outputs tensor as is and leave it to downstream to define events, disalign targets
+        and features (see `shift_discrete_padded_features`) and from that
+        censoring-indicator and tte.
     """
-    ################
     if timestep_aggregation_dict is None:
         timestep_aggregation_dict = dict.fromkeys(column_names, "sum")
 

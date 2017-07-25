@@ -10,7 +10,7 @@ from .tte_util import get_is_not_censored
 from .tte_util import get_tte
 
 def get_padded_seq_lengths(padded):
-    """Returns the number of conecutive non-nan elements per sequence.
+    """Returns the number of (seq_len) non-nan elements per sequence.
 
     :param padded: 2d or 3d tensor with dim 2 the time dimension
     """
@@ -38,10 +38,12 @@ def df_to_array(df, column_names, nanpad_right=True, return_lists=False,
         between t's are padded with zeros.
 
       * `columns` in `column_names` (String list)
+
     :type df: Pandas dataframe
+
     :param Boolean nanpad_right: If `True`, sequences are `np.nan`-padded to `max_seq_len`
     :param return_lists: Put every tensor in its own subarray
-    :param_id_col: string column name for `id`
+    :param id_col: string column name for `id`
     :param t_col: string column name for `t`
     :return padded: With seqlen the max value of `t` per id
 
@@ -96,7 +98,7 @@ def df_to_array(df, column_names, nanpad_right=True, return_lists=False,
 
 
 def df_to_padded(df, column_names, id_col='id', t_col='t'):
-    """pads pandas df to a numpy array of shape `[n_seqs,max_seqlen,n_features]`.
+    """Pads pandas df to a numpy array of shape `[n_seqs,max_seqlen,n_features]`.
         see `df_to_array` for details
     """
     return df_to_array(df, column_names, nanpad_right=True,
@@ -104,7 +106,7 @@ def df_to_padded(df, column_names, id_col='id', t_col='t'):
 
 
 def df_to_subarrays(df, column_names, id_col='id', t_col='t'):
-    """pads pandas df to subarrays of shape `[n_seqs][seqlen[s],n_features]`.
+    """Pads pandas df to subarrays of shape `[n_seqs][seqlen[s],n_features]`.
         see `df_to_array` for details
     """
     return df_to_array(df, column_names, nanpad_right=False,
@@ -112,17 +114,18 @@ def df_to_subarrays(df, column_names, id_col='id', t_col='t'):
 
 
 def padded_to_df(padded, column_names, dtypes, ids=None, id_col='id', t_col='t'):
-    """takes padded numpy array and converts nonzero entries to pandas dataframe row.
+    """Takes padded numpy array and converts nonzero entries to pandas dataframe row.
 
     Inverse to df_to_padded.
 
-    :param padded: a numpy float array of dimension `[n_seqs,max_seqlen,n_features]`.
-    :param column_names: other columns to expand from df
-    :param dtypes:  the type to cast the float-entries to.
+    :param Array padded: a numpy float array of dimension `[n_seqs,max_seqlen,n_features]`.
+    :param list column_names: other columns to expand from df
+    :param list dtypes:  the type to cast the float-entries to.
     :type dtypes: String list
     :param ids: (optional) the ids to attach to each sequence
     :param id_col: Column where `id` is located. Default value is `id`.
     :param t_col: Column where `t` is located. Default value is `t`.
+
     :return df: Dataframe with Columns
 
       *  `id` (Integer) or the value of `ids`
@@ -387,9 +390,13 @@ def df_join_in_endtime(df, constant_per_id_cols='id',
 
 def shift_discrete_padded_features(padded, fill=0):
     """
-    Feature cols : data available in realtime at timestamp
-    Target  cols : not known at timestamp
 
+    :param padded: padded (np array): Array [batch,timestep,...]
+    :param float fill: value to replace nans with.
+
+    =====
+    Details
+    =====
     For mathematical purity and to avoid confusion, in the Discrete case
     "2015-12-15" means an interval "2015-12-15 00.00 - 2015-12-15 23.59" i.e the data
     is accessible at "2015-12-15 23.59"  (time when we query our database to
@@ -398,53 +405,82 @@ def shift_discrete_padded_features(padded, fill=0):
     In the continuous case "2015-12-15 23.59" means exactly at
     "2015-12-15 23.59: 00000000".
 
-    TODO does not render in sphinx.
-    ::
-
-
     Discrete case
-    t|dt                    |Event
-    0|2015-12-15 00.00-23.59|1
-    1|2015-12-16 00.00-23.59|1
-    2|2015-12-17 00.00-23.59|0
-    etc
-    In detail:
-    t        |0|1|2|3|4|5|....
-    ---------------------|....
-    event    |1|1|0|0|1|?|....
-    feature  |?|1|1|0|0|1|....
-    TTE      |0|0|2|1|0|?|....
-    Observed*|F|T|T|T|T|T|....
+    --------
+
+    +-+----------------------+------+
+    |t|dt                    |Event |
+    +=+======================+======+
+    |0|2015-12-15 00.00-23.59|1     |
+    +-+----------------------+------+
+    |1|2015-12-16 00.00-23.59|1     |
+    +-+----------------------+------+
+    |2|2015-12-17 00.00-23.59|0     |
+    +-+----------------------+------+
+
+    etc. In detail:
+
+    +---------+-+-+-+-+-+-+----+
+    |t        |0|1|2|3|4|5|....|
+    +=========+=+=+=+=+=+=+====+
+    |event    |1|1|0|0|1|?|....|
+    +---------+-+-+-+-+-+-+----+
+    |feature  |?|1|1|0|0|1|....|
+    +---------+-+-+-+-+-+-+----+
+    |TTE      |0|0|2|1|0|?|....|
+    +---------+-+-+-+-+-+-+----+
+    |Observed*|F|T|T|T|T|T|....|
+    +---------+-+-+-+-+-+-+----+
 
     Continuous case
-    t|dt              |Event
-    0|2015-12-15 14.39|1
-    1|2015-12-16 16.11|1
-    2|2015-12-17 22.18|0
-    etc
-    In detail:
+    --------
 
-    t        |0|1|2|3|4|5|....
-    ---------------------|....
-    event    |1|1|0|0|1|?|....
-    feature  |1|1|0|0|1|?|....
-    TTE      |1|3|2|1|?|?|....
-    Observed*|T|T|T|T|T|T|....
+    +-+----------------+------+
+    |t|dt              |Event |
+    +=+================+======+
+    |0|2015-12-15 14.39|1     |
+    +-+----------------+------+
+    |1|2015-12-16 16.11|1     |
+    +-+----------------+------+
+    |2|2015-12-17 22.18|0     |
+    +-+----------------+------+
+
+    etc. In detail:
+
+    +---------+-+-+-+-+-+-+---+
+    |t        |0|1|2|3|4|5|...|
+    +=========+=+=+=+=+=+=+===+
+    |event    |1|1|0|0|1|?|...|
+    +---------+-+-+-+-+-+-+---+
+    |feature  |1|1|0|0|1|?|...|
+    +---------+-+-+-+-+-+-+---+
+    |TTE      |1|3|2|1|?|?|...|
+    +---------+-+-+-+-+-+-+---+
+    |Observed*|T|T|T|T|T|T|...|
+    +---------+-+-+-+-+-+-+---+
 
 
-    Observed* = Do we have feature data at this time?
+    *Observed = Do we have feature data at this time?*
+
         In the discrete case:
+
         -> we need to roll data intent as features to the right.
+
           -> First timestep typically has no measured features (and we may not even
           know until the end of the first interval if the sequence even exists!)
 
         So there's two options after rolling features to the right:
-        1. Fill in 0s at t=0. (`shift_discrete_padded_features`)
-            note: if (data -> event) this is (randomly) leaky (potentially safe)
-            note: if (data <-> event) this exposes the truth (unsafe)!
-        2. Remove t=0 from target data
-            (dont learn to predict about prospective customers first purchase)
+
+        1. *Fill in 0s at t=0. (`shift_discrete_padded_features`)*
+
+            - if (data -> event) this is (randomly) leaky (potentially safe)
+            - if (data <-> event) this exposes the truth (unsafe)!
+
+        2. *Remove t=0 from target data*
+
+            - (dont learn to predict about prospective customers first purchase)
             Safest!
+
         note: We never have target data for the last timestep after rolling.
 
       Example:
@@ -458,7 +494,7 @@ def shift_discrete_padded_features(padded, fill=0):
     return padded
 
 def normalize_padded(padded, means=None, stds=None):
-    """ norm. by last dim of padded with norm.coef or get them.
+    """Normalize by last dim of padded with means/stds or calculate them.
 
         .. TODO::
            * consider importing instead ex:

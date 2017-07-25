@@ -12,19 +12,41 @@ def generate_random_df(n_seqs=5,
                        unique_times=True,
                        starttimes_min=0,
                        starttimes_max=0):
-    """ generates random dataframe for testing.
+    """Generates random dataframe for testing.
+
+    For every sequence:
+
+    1. generate a random seq_length from [1,`max_seq_length`]
+    2. generate the number of observations in the sequence from [1,seq_length]
+    3. randomly pick observation elapsed times from [1,`seq_length`]
+    4. randomly pick a starttime [0,`starttimes_max`]
+    5. Generate random data in the columns at these timesteps
+
+    This means that the only thing we know about a sequence is that it's at maximum `max_seq_length`
+
     :param df: pandas dataframe with columns
+
       * `id`: integer
+
       * `t`: integer
+
       * `dt`: integer mimmicking a global event time
+
       * `t_ix`: integer contiguous user time count per id 0,1,2,..
+
       * `t_elapsed`: integer the time from starttime per id ex 0,1,10,..
+
       * `event`: 0 or 1
+
       * `int_column`: random data
+
       * `double_column`: dandom data
-    :param unique_times: whether there id,elapsed_time has only one obs. Default true
-    :param starttimes_min: integer to generate `dt` the absolute time
-    :param starttimes_max: integer to generate `dt` the absolute time
+
+    :param int unique_times: whether there id,elapsed_time has only one obs. Default true
+    :param int starttimes_min: integer to generate `dt` the absolute time
+    :param int starttimes_max: integer to generate `dt` the absolute time
+
+    :return df: A randomly generated dataframe.
     """
 
     seq_lengths = np.random.randint(max_seq_length, size=n_seqs) + 1
@@ -89,7 +111,24 @@ def generate_random_df(n_seqs=5,
 
 
 def generate_weibull(A, B, C, shape, discrete_time):
-    # Generate Weibull random variables
+    """Generate Weibull random variables.
+
+    Inputs can be scalar or broadcastable to `shape`.
+
+    :param A: Generating alpha
+    :param B: Generating beta
+    :param C: Censoring time
+
+    :return: list of `[W, Y, U]`
+
+      * `W`: Actual TTE
+
+      * `Y`: Censored TTE
+
+      * `U`: non-censoring indicators
+
+    :rtype: ndarray
+    """
     W = np.sort(A * np.power(-np.log(np.random.uniform(0, 1, shape)), 1 / B))
 
     if discrete_time:
