@@ -3,9 +3,10 @@ Wrapper for Python Weibull functions
 """
 import numpy as np
 
+
 def cumulative_hazard(t, a, b):
     """ Cumulative hazard
-    
+
     :param t: Value
     :param a: Alpha
     :param b: Beta
@@ -71,14 +72,21 @@ def pmf(t, a, b):
 def mode(a, b):
     # Continuous mode.
     # TODO (mathematically) prove how close it is to discretized mode
-    mode = a * np.power((b - 1.0) / b, 1.0 / b)
-    mode[b <= 1.0] = 0.0
+    try:
+        mode = a * np.power((b - 1.0) / b, 1.0 / b)
+        mode[b <= 1.0] = 0.0
+    except:
+        # scalar case
+        if b <= 1.0:
+            mode = 0
+        else:
+            mode = a * np.power((b - 1.0) / b, 1.0 / b)
     return mode
 
 
 def mean(a, b):
     """ Continuous mean. at most 1 step below discretized mean 
-    
+
     `E[T ] <= E[Td] + 1` true for positive distributions.
     """
     from scipy.special import gamma
@@ -87,10 +95,10 @@ def mean(a, b):
 
 def quantiles(a, b, p):
     """ Quantiles
-    
+
     :param a: Alpha
     :param b: Beta
-    :param p: 
+    :param p:
     :return: `a * np.power(-np.log(1.0 - p), 1.0 / b)`
     """
     return a * np.power(-np.log(1.0 - p), 1.0 / b)
@@ -98,9 +106,9 @@ def quantiles(a, b, p):
 
 def mean(a, b):
     """Continuous mean. Theoretically at most 1 step below discretized mean
-    
+
     `E[T ] <= E[Td] + 1` true for positive distributions.
-    
+
     :param a: Alpha
     :param b: Beta
     :return: `a * gamma(1.0 + 1.0 / b)`
