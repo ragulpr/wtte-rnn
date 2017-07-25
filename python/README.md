@@ -1,8 +1,8 @@
-# WTTE-RNN Python
+# WTTE-RNN (Python Implementation / API)
 
 [![Build Status](https://travis-ci.org/ragulpr/wtte-rnn.svg?branch=master)](https://travis-ci.org/ragulpr/wtte-rnn)
 
-Weibull Time To Event Reccurent Neural Network
+Weibull Time To Event Recurrent Neural Network
 
 A less hacky machine-learning framework for churn- and time to event prediction.
 Forecasting problems as diverse as server monitoring to earthquake- and
@@ -11,7 +11,7 @@ WTTE-RNN is an algorithm and a philosophy about how this should be done.
 
 * [blog post](https://ragulpr.github.io/2016/12/22/WTTE-RNN-Hackless-churn-modeling/)
 * [master thesis](https://ragulpr.github.io/assets/draft_master_thesis_martinsson_egil_wtte_rnn_2016.pdf)
-* Quick visual intro to the [model](https://imgur.com/a/HX4KQ) 
+* Quick visual intro to the [model](https://imgur.com/a/HX4KQ)
 
 
 ## Licensing

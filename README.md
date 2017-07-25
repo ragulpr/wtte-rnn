@@ -2,16 +2,16 @@
 
 [![Build Status](https://travis-ci.org/ragulpr/wtte-rnn.svg?branch=master)](https://travis-ci.org/ragulpr/wtte-rnn)
 
-Weibull Time To Event Reccurent Neural Network
+Weibull Time To Event Recurrent Neural Network
 
 A less hacky machine-learning framework for churn- and time to event prediction.
 Forecasting problems as diverse as server monitoring to earthquake- and
 churn-prediction can be posed as the problem of predicting the time to an event.
-WTTE-RNN is an algorithm and a philosophy about how this should be done. 
+WTTE-RNN is an algorithm and a philosophy about how this should be done.
 
 * [blog post](https://ragulpr.github.io/2016/12/22/WTTE-RNN-Hackless-churn-modeling/)
 * [master thesis](https://ragulpr.github.io/assets/draft_master_thesis_martinsson_egil_wtte_rnn_2016.pdf)
-* Quick visual intro to the [model](https://imgur.com/a/HX4KQ) 
+* Quick visual intro to the [model](https://imgur.com/a/HX4KQ)
 * Jupyter notebook: [basics](examples/keras/simple_example.ipynb), [end to end](examples/data_pipeline/data_pipeline.ipynb )
 
 
@@ -22,7 +22,7 @@ WTTE-RNN is an algorithm and a philosophy about how this should be done.
 Check out [README for Python package](python/README.md).
 
 If this seems like overkill, the basic implementation can be found inlined as a
-[jupyter notebook](examples/keras/standalone_simple_example.ipynb) 
+[jupyter notebook](examples/keras/standalone_simple_example.ipynb)
 
 
 # Ideas and Basics
@@ -47,7 +47,7 @@ too.
 The next step is to train the algo of choice with a special log-loss that can work
 with censored data. The intuition behind it is that we want to assign high
 probability at the *next* event or low probability where there *wasn't* any events
-(censored data): 
+(censored data):
 
 ![WTTE-RNN prediction over a timeline](./readme_figs/solution_beta_2.gif)
 
@@ -83,7 +83,7 @@ Global features can have this effect if not properly treated.
 Currently implemented in python/numpy:
 
 * Transformations
-    * data pipeline transformations (pandas dataframes of expected format to numpy)
+    * data pipeline transformations (pandas `DataFrame` of expected format to numpy)
     * time to event and censoring indicator calculations
 * Weibull functions (cdf,pdf,quantile,mean etc)
 
@@ -105,9 +105,9 @@ and easy.  Pull-requests, recommendations, comments and contributions very welco
 
 The core technology is the objective functions.  These can be used with any
 machine-learning algorithm.  To spread the word we should implement and commit them to
-various ML-projects. 
+various ML-projects.
 
-* Tensorflow ✔
+* TensorFlow ✔
 * Keras (TensorFlow wrapper) ✔
 * MXnet
 * Theano
@@ -123,7 +123,7 @@ need weibull related functions for the final output.
 
 * Ready to run helper functions implemented in SQL, R, Python.
 
-## Monitoring 
+## Monitoring
 
 The WTTE-RNN is as much an ML-algorithm as a visual language to talk about this shape of data and our predictions.
 
@@ -150,6 +150,6 @@ The WTTE-RNN is as much an ML-algorithm as a visual language to talk about this 
 
 ## Contributing
 
-Reach out to egil.martinsson[at]gmail.com if you have any questions. 
-If you can, please open an issue so other can join in. 
+Reach out to egil.martinsson[at]gmail.com if you have any questions.
+If you can, please open an issue so other can join in.
 Contributions/PR/Comments etc are very welcome!
