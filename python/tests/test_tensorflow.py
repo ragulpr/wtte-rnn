@@ -27,15 +27,15 @@ def tf_loglik_runner(loglik_fun, discrete_time):
     y_ = tf.placeholder(tf.float32, shape=(None, 1))
     u_ = tf.placeholder(tf.float32, shape=(None, 1))
 
-    a = tf.exp(tf.Variable(tf.random_normal([1]), name='a_weight'))
-    b = tf.exp(tf.Variable(tf.random_normal([1]), name='b_weight'))
+    a = tf.exp(tf.Variable(tf.ones([1]), name='a_weight'))
+    b = tf.exp(tf.Variable(tf.ones([1]), name='b_weight'))
 
     # testing part:
     loglik = loglik_fun(a, b, y_, u_)
 
     loss = -tf.reduce_mean(loglik)
 
-    optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.01)
+    optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.005)
 
     train_step = optimizer.minimize(loss)
 
@@ -57,10 +57,12 @@ def tf_loglik_runner(loglik_fun, discrete_time):
         loss_val, _, a_val, b_val = sess.run([loss, train_step, a, b], feed_dict={
                                              y_: tte_censored, u_: u_train})
 
-       # print('iteration:',step,'alpha :',a_val,'beta :',b_val,'discrete_time: ',discrete_time)
-    print((real_a - a_val)**2, (real_b - b_val)**2)
-    assert (real_a - a_val)**2 < 0.01
-    assert (real_b - b_val)**2 < 0.01
+        if step % 100 == 0:
+            print(step, loss_val, a_val, b_val)
+
+    print(np.abs(real_a - a_val), np.abs(real_b - b_val))
+    assert np.abs(real_a - a_val) < 0.05, 'alpha not converged'
+    assert np.abs(real_b - b_val) < 0.05, 'beta not converged'
     sess.close()
     tf.reset_default_graph()
 

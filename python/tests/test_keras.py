@@ -135,11 +135,9 @@ def keras_loglik_runner(discrete_time, add_masking):
     a_val = predicted[:, :, 0].mean()
     b_val = predicted[:, :, 1].mean()
 
-    print(a_val, b_val)
-    assert (real_a - a_val)**2 < 0.01, 'real alpha :' + \
-        str(real_a) + ' estimated alpha :' + str(a_val)
-    assert (real_b - b_val)**2 < 0.01, 'real beta :' + \
-        str(real_a) + ' estimated beta :' + str(a_val)
+    print(np.abs(real_a - a_val), np.abs(real_b - b_val))
+    assert np.abs(real_a - a_val) < 0.1, 'alpha not converged'
+    assert np.abs(real_b - b_val) < 0.1, 'beta not converged'
 
 
 def test_loglik_continuous():
