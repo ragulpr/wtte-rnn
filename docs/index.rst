@@ -9,9 +9,15 @@ Contents:
 
 .. toctree::
    :maxdepth: 4
+   :caption: Examples
 
-   python
    examples
+
+.. toctree::
+   :maxdepth: 3
+   :caption: Python Package
+
+   modules
 
 Indices and tables
 ==================

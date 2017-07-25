@@ -1,4 +1,0 @@
-#!/bin/bash
-sphinx-apidoc -M -l -o ./docs ./python/
-cd docs
-make html
