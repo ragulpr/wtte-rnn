@@ -12,7 +12,7 @@ WTTE-RNN is an algorithm and a philosophy about how this should be done.
 * [blog post](https://ragulpr.github.io/2016/12/22/WTTE-RNN-Hackless-churn-modeling/)
 * [master thesis](https://ragulpr.github.io/assets/draft_master_thesis_martinsson_egil_wtte_rnn_2016.pdf)
 * Quick visual intro to the [model](https://imgur.com/a/HX4KQ)
-* Jupyter notebook: [basics](examples/keras/simple_example.ipynb), [end to end](examples/data_pipeline/data_pipeline.ipynb )
+* Jupyter notebook: [basics](examples/keras/simple_example.ipynb)
 
 
 # Installation
@@ -28,14 +28,14 @@ If this seems like overkill, the basic implementation can be found inlined as a
 # Ideas and Basics
 
 You have data consisting of many time-series of events and want to use historic data
-to predict the time to the next event (TTE).  If you haven't observed the last event
+to predict the time to the next event (TTE). If you haven't observed the last event
 yet we've only observed a minimum bound of the TTE to train on. This results in
 what's called *censored data* (in red):
 
 ![Censored data](./readme_figs/data.gif)
 
 Instead of predicting the TTE itself the trick is to let your machine learning model
-output the *parameters of a distribution*.  This could be anything but we like the
+output the *parameters of a distribution*. This could be anything but we like the
 *Weibull distribution* because it's
 [awesome](https://ragulpr.github.io/2016/12/22/WTTE-RNN-Hackless-churn-modeling/#embrace-the-Weibull-euphoria).
 The machine learning algorithm could be anything gradient-based but we like RNNs
@@ -47,7 +47,7 @@ too.
 The next step is to train the algo of choice with a special log-loss that can work
 with censored data. The intuition behind it is that we want to assign high
 probability at the *next* event or low probability where there *wasn't* any events
-(censored data):
+(for censored data):
 
 ![WTTE-RNN prediction over a timeline](./readme_figs/solution_beta_2.gif)
 
@@ -81,9 +81,9 @@ Global features can have this effect if not properly treated.
 # Status and Roadmap
 
 The project is under development.  The goal is to create a forkable and easily
-deployable model framework.  WTTE-RNN is the algorithm, churn_watch is the deployment
-- an opinionated idea about how churn-monitoring and reporting can be made beautiful
-and easy.  Pull-requests, recommendations, comments and contributions very welcome.
+deployable model framework.  WTTE-RNN is the algorithm but the whole project aims to be so much more. It's a visual philosophy and an opinionated idea about how churn-monitoring and reporting can be made beautiful and easy.  
+
+Pull-requests, recommendations, comments and contributions very welcome.
 
 ## What's in the repository
 
@@ -94,13 +94,17 @@ and easy.  Pull-requests, recommendations, comments and contributions very welco
 * Objective functions written for:
   - Tensorflow
   - Keras
-* Layers
-  - Weibull output layer in Keras
+* Keras helpers
+  - Weibull output layers
+  - Loss functions
+  - Callbacks
+* ~~ Lots of example-implementations ~~
+    - [Basic notebook](examples/keras/simple_example.ipynb) will be kept here but to save space and encourage viz check out [the examples-repo](https://github.com/ragulpr/wtte-rnn-examples) or fork your notebooks there
 
 ## Multi-framework support
 
 The core technology is the objective functions.
-We plan to make them to be reusable with any machine-learning frameworks.
+We plan to make them to be reusable with any machine-learning framework.
 
 * TensorFlow ✔
 * Keras (TensorFlow wrapper) ✔
@@ -110,23 +114,6 @@ We plan to make them to be reusable with any machine-learning frameworks.
 * h2o
 * scikitFlow
 * MLlib
-
-## Model input and output
-
-To use the model one needs basic tte-transforms of raw data.  To consume the models we
-need Weibull related functions for the final output.
-
-* Ready to run helper functions implemented in SQL, R, Python.
-
-## Monitoring
-
-The WTTE-RNN is as much an ML-algorithm as a visual language to talk about this shape of data and our predictions.
-
-* Plots (partly done)
-* Shiny webapp or/and similar (partly done elsewhere)
-* Notifications (e.g.,Slack/e-mail bots & summaries)
-* API
-
 
 # Licensing
 
