@@ -16,7 +16,7 @@ def loglik_continuous(a, b, y_, u_, output_collection=(), name=None):
     :type a: `float32` or `float64`.
     :param b:beta.  Positive nonzero `Tensor`.
     :type b: `float32` or `float64`.
-    :param y_: time to event. Positive nonzero `Tensor` 
+    :param y_: time to event. Positive nonzero `Tensor`
     :type y_: `float32` or `float64`.
     :param u_: indicator. 0.0 if right censored, 1.0 if uncensored `Tensor`
     :type u_: `float32` or `float64`.
@@ -41,7 +41,7 @@ def loglik_discrete(a, b, y_, u_, output_collection=(), name=None):
     """Returns element-wise Weibull censored discrete log-likelihood.
 
     Unit-discretized weibull log-likelihood. loss=-loglikelihood.
-    
+
     .. note::
         All input values must be of same type and shape.
 
@@ -82,7 +82,7 @@ def betapenalty(b, location=10.0, growth=20.0, output_collection=(), name=None):
     :param String name: name of the operation.
     :return:  A positive `Tensor` of same shape as `b` being a penalty term.
     """
-    with tf.name_scope(name, "weibull_betapenalty", [a, b, y_, u_]):
+    with tf.name_scope(name, "weibull_betapenalty", [b]):
         scale = growth / location
         penalty = tf.exp(scale * (b - location))
         tf.add_to_collection(output_collection, penalty)

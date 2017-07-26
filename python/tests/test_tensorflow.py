@@ -7,22 +7,10 @@ import tensorflow as tf
 import numpy as np
 
 from wtte.objectives.tensorflow import loglik_continuous, loglik_discrete
+from wtte.data_generators import generate_weibull
 
 # SANITY CHECK: Use pure Weibull data censored at C(ensoring point).
 # Should converge to the generating A(alpha) and B(eta) for each timestep
-
-
-def generate_data(A, B, C, shape, discrete_time):
-    # Generate Weibull random variables
-    W = np.sort(A * np.power(-np.log(np.random.uniform(0, 1, shape)), 1 / B))
-
-    if discrete_time:
-        C = np.floor(C)
-        W = np.floor(W)
-
-    U = np.less_equal(W, C) * 1.
-    Y = np.minimum(W, C)
-    return W, Y, U
 
 n_samples = 1000
 n_features = 1
@@ -39,15 +27,15 @@ def tf_loglik_runner(loglik_fun, discrete_time):
     y_ = tf.placeholder(tf.float32, shape=(None, 1))
     u_ = tf.placeholder(tf.float32, shape=(None, 1))
 
-    a = tf.exp(tf.Variable(tf.random_normal([1]), name='a_weight'))
-    b = tf.exp(tf.Variable(tf.random_normal([1]), name='b_weight'))
+    a = tf.exp(tf.Variable(tf.ones([1]), name='a_weight'))
+    b = tf.exp(tf.Variable(tf.ones([1]), name='b_weight'))
 
     # testing part:
     loglik = loglik_fun(a, b, y_, u_)
 
     loss = -tf.reduce_mean(loglik)
 
-    optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.01)
+    optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.005)
 
     train_step = optimizer.minimize(loss)
 
@@ -57,7 +45,7 @@ def tf_loglik_runner(loglik_fun, discrete_time):
     # Initializes global variables in the graph.
     sess.run(tf.global_variables_initializer())
 
-    tte_actual, tte_censored, u_train = generate_data(
+    tte_actual, tte_censored, u_train = generate_weibull(
         A=real_a,
         B=real_b,
         C=censoring_point,  # <np.inf -> impose censoring
@@ -69,10 +57,12 @@ def tf_loglik_runner(loglik_fun, discrete_time):
         loss_val, _, a_val, b_val = sess.run([loss, train_step, a, b], feed_dict={
                                              y_: tte_censored, u_: u_train})
 
-#        print('iteration:',step,'alpha :',a_val,'beta :',b_val,'discrete_time: ',discrete_time)
-    print((real_a - a_val)**2, (real_b - b_val)**2)
-    assert (real_a - a_val)**2 < 0.01
-    assert (real_b - b_val)**2 < 0.01
+        if step % 100 == 0:
+            print(step, loss_val, a_val, b_val)
+
+    print(np.abs(real_a - a_val), np.abs(real_b - b_val))
+    assert np.abs(real_a - a_val) < 0.05, 'alpha not converged'
+    assert np.abs(real_b - b_val) < 0.05, 'beta not converged'
     sess.close()
     tf.reset_default_graph()
 

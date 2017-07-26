@@ -36,7 +36,7 @@ def weibull_contour(Y, U, is_discrete, true_alpha, true_beta, logx=True, samples
     else:
         xlab = r'$\alpha$'
 
-    cp = plt.contourf(x_grid, y_grid, z_grid, 100)
+    cp = plt.contourf(x_grid, y_grid, z_grid, 100, cmap='jet')
     plt.colorbar(cp)
     if lines:
         plt.axvline(true_alpha, linestyle='dashed', c='black')

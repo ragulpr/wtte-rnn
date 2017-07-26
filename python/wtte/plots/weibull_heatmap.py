@@ -9,6 +9,23 @@ from six.moves import xrange
 from wtte import weibull
 
 
+def basic_heatmap(ax, pred, max_horizon=None, resolution=None, cmap='jet'):
+    if max_horizon is None:
+        max_horizon = pred.shape[0]
+
+    if resolution is None:
+        resolution = max_horizon
+
+    ax.imshow(pred.T, origin='lower', interpolation='none',
+              aspect='auto', cmap=cmap)
+    ax.set_yticks([x * (resolution + 0.0) /
+                   max_horizon for x in [0, max_horizon / 2, max_horizon - 1]])
+    ax.set_yticklabels([0, max_horizon / 2, max_horizon - 1])
+    ax.set_ylim(-0.5, resolution - 0.5)
+    ax.set_ylabel('steps ahead $s$')
+    return ax
+
+
 def weibull_heatmap(
     fig, ax,
     t,
@@ -23,7 +40,8 @@ def weibull_heatmap(
     is_discrete=True,
     resolution=None,
     xax_nbins=10,
-    yax_nbins=4
+    yax_nbins=4,
+    cmap='jet'
 ):
     """
         Adds a continuous or discrete heatmap with TTE to ax.
@@ -38,10 +56,10 @@ def weibull_heatmap(
 
     # Discrete
     if is_discrete:
-        fun = weibull.pmf
+        prob_fun = weibull.pmf
         drawstyle = 'steps-post'
     else:
-        fun = weibull.pdf
+        prob_fun = weibull.pdf
         # drawstyle defaults to straight line.
         drawstyle = None
 
@@ -57,7 +75,7 @@ def weibull_heatmap(
 
     if time_to_event is not None:
         if censoring_indicator is not None and true_time_to_event is None:
-            is_censored = bool(censoring_indicator)
+            is_censored = np.array(censoring_indicator).astype(bool)
         if true_time_to_event is not None:
             is_censored = (time_to_event < true_time_to_event)
         else:
@@ -72,18 +90,14 @@ def weibull_heatmap(
     assert len(true_time_to_event) == n
     assert len(is_censored) == n
 
-    pred = fun(
+    pred = prob_fun(
         np.tile(np.linspace(0, max_horizon - 1, resolution), (n, 1)),
         np.tile(a.reshape(n, 1), (1, resolution)),
         np.tile(b.reshape(n, 1), (1, resolution))
     )
 
-    ax.imshow(pred.T, origin='lower', interpolation='none', aspect='auto')
-    ax.set_yticks([x * (resolution + 0.0) /
-                   max_horizon for x in [0, max_horizon / 2, max_horizon - 1]])
-    ax.set_yticklabels([0, max_horizon / 2, max_horizon - 1])
-    ax.set_ylim(-0.5, resolution - 0.5)
-    ax.set_ylabel('steps ahead $s$')
+    ax = basic_heatmap(ax, pred, max_horizon, resolution,
+                       cmap=cmap)
     ax.set_title(title)
 
     def ax_add_scaled_line(ax, t, y, y_value_max, y_n_pixels, drawstyle,
@@ -116,8 +130,8 @@ def weibull_heatmap(
                                label='time_to_event')
         if not all(~is_censored):
             ax_add_scaled_line(ax,
-                               t[is_censored],
-                               time_to_event[is_censored],
+                               t,
+                               time_to_event,
                                y_value_max=max_horizon,
                                y_n_pixels=resolution,
                                drawstyle=drawstyle,

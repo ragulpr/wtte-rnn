@@ -17,9 +17,13 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
+from __future__ import print_function
+import sys
+import os
 
-import sys, os, pathlib
-sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
 
 # -- General configuration ------------------------------------------------
 
@@ -77,7 +81,7 @@ language = None
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build','*migrations*','*-env']
+exclude_patterns = ['_build','*migrations*','**/venv*','*-env', '*tensorflow*']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -112,11 +116,14 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #html_theme = 'alabaster'
-
-import sphinx_rtd_theme
-html_theme = "sphinx_rtd_theme"
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
-
+if not on_rtd:  # only import and set the theme if we're building docs locally
+    try:
+        import sphinx_rtd_theme
+    except ImportError:
+        print('Please do pip install sphinx-rtd-theme first.', file=sys.stderr)
+        sys.exit(1)
+    html_theme = 'sphinx_rtd_theme'
+    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -145,7 +152,7 @@ html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# html_static_path = ['_static']
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -290,3 +297,12 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+def run_apidoc(_):
+    from sphinx.apidoc import main
+    cur_dir = os.path.abspath(os.path.dirname(__file__))
+    module_dir = os.path.join(root_dir, 'python/wtte')
+    main(['-M', '-l', '-o', cur_dir, module_dir, '--force'])
+
+def setup(app):
+    app.connect('builder-inited', run_apidoc)

@@ -2,8 +2,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from keras import backend as K
+import warnings
 import numpy as np
+
+from keras import backend as K
+from keras.callbacks import Callback
 
 
 def _keras_unstack_hack(ab):
@@ -23,7 +26,8 @@ def _keras_unstack_hack(ab):
     return a, b
 
 
-def output_lambda(x, init_alpha=1.0, max_beta_value=5.0, max_alpha_value=None):
+def output_lambda(x, init_alpha=1.0, max_beta_value=5.0,
+                  alpha_kernel_scalefactor=None):
     """Elementwise (Lambda) computation of alpha and regularized beta.
 
         - Alpha:
@@ -48,6 +52,15 @@ def output_lambda(x, init_alpha=1.0, max_beta_value=5.0, max_alpha_value=None):
             (regularization) Use max_beta_value to implicitly regularize the model
             (initialization) Fixed to begin moving slowly around 1.0
 
+        - Usage
+            .. code-block:: python
+
+                model.add(TimeDistributed(Dense(2)))
+                model.add(Lambda(wtte.output_lambda, arguments={"init_alpha":init_alpha, 
+                                                        "max_beta_value":2.0
+                                                       }))
+
+
         :param x: tensor with last dimension having length 2 with x[...,0] = alpha, x[...,1] = beta
         :param init_alpha: initial value of `alpha`. Default value is 1.0.
         :param max_beta_value: maximum beta value. Default value is 5.0.
@@ -60,14 +73,22 @@ def output_lambda(x, init_alpha=1.0, max_beta_value=5.0, max_alpha_value=None):
         :rtype: Array
 
     """
+    if max_beta_value is None or max_beta_value > 3:
+        if K.epsilon() <= 1e-07 and K.backend() == 'tensorflow':
+            message = "\
+            Using tensorflow backend and allowing high `max_beta_value` may lead to\n\
+            gradient NaN during training unless `K.epsilon()` is small.\n\
+            Call `keras.backend.set_epsilon(1e-08)` to lower epsilon \
+            "
+            warnings.warn(message)
+
     a, b = _keras_unstack_hack(x)
 
     # Implicitly initialize alpha:
-    if max_alpha_value is None:
+    if alpha_kernel_scalefactor is None:
         a = init_alpha * K.exp(a)
     else:
-        a = init_alpha * K.clip(x=a, min_value=K.epsilon(),
-                                max_value=max_alpha_value)
+        a = init_alpha * K.exp(alpha_kernel_scalefactor*a)
 
     m = max_beta_value
     if m > 1.05:  # some value >>1.0
@@ -90,8 +111,10 @@ def output_lambda(x, init_alpha=1.0, max_beta_value=5.0, max_alpha_value=None):
 
 
 class output_activation(object):
-    """ Elementwise computation of alpha and regularized beta using keras.layers.Activation.
-        Wrapper
+    """ Elementwise computation of alpha and regularized beta.
+
+        Object-Oriented Wrapper to `output_lambda` using keras.layers.Activation.
+
 
         - Usage
             .. code-block:: python
@@ -110,9 +133,9 @@ class output_activation(object):
 
     def activation(self, ab):
         """ (Internal function) Activation wrapper
-        
+
         :param ab: original tensor with alpha and beta.
-        :return ab: return of `output_lambda` with `init_alpha` and `max_beta_value`. 
+        :return ab: return of `output_lambda` with `init_alpha` and `max_beta_value`.
         """
         ab = output_lambda(ab, init_alpha=self.init_alpha,
                            max_beta_value=self.max_beta_value)
@@ -220,3 +243,134 @@ class loss(object):
             loss = -loglikelihoods
 
         return loss
+
+
+class WeightWatcher(Callback):
+    """Keras Callback to keep an eye on output layer weights.
+        (under development)
+
+        Usage:
+            weightwatcher = WeightWatcher(per_batch=True,per_epoch=False)
+            model.fit(...,callbacks=[weightwatcher])
+            weightwatcher.plot()
+    """
+
+    def __init__(self,
+                 per_batch=False,
+                 per_epoch=True
+                 ):
+        self.per_batch = per_batch
+        self.per_epoch = per_epoch
+
+    def on_train_begin(self, logs={}):
+        self.a_weights_mean = []
+        self.b_weights_mean = []
+        self.a_weights_min = []
+        self.b_weights_min = []
+        self.a_weights_max = []
+        self.b_weights_max = []
+        self.a_bias = []
+        self.b_bias = []
+
+    def append_metrics(self):
+        # Last two weightlayers in model
+
+        output_weights, output_biases = self.model.get_weights()[-2:]
+
+        a_weights_mean, b_weights_mean = output_weights.mean(0)
+        a_weights_min, b_weights_min = output_weights.min(0)
+        a_weights_max, b_weights_max = output_weights.max(0)
+
+        a_bias, b_bias = output_biases
+
+        self.a_weights_mean.append(a_weights_mean)
+        self.b_weights_mean.append(b_weights_mean)
+        self.a_weights_min.append(a_weights_min)
+        self.b_weights_min.append(b_weights_min)
+        self.a_weights_max.append(a_weights_max)
+        self.b_weights_max.append(b_weights_max)
+        self.a_bias.append(a_bias)
+        self.b_bias.append(b_bias)
+
+    def on_train_end(self, logs={}):
+        if self.per_epoch:
+            self.append_metrics()
+        return
+
+    def on_epoch_begin(self, epoch, logs={}):
+        if self.per_epoch:
+            self.append_metrics()
+        return
+
+    def on_epoch_end(self, epoch, logs={}):
+        return
+
+    def on_batch_begin(self, batch, logs={}):
+        if self.per_batch:
+            self.append_metrics()
+        return
+
+    def on_batch_end(self, batch, logs={}):
+        if self.per_batch:
+            self.append_metrics()
+        return
+
+    def plot(self):
+        import matplotlib.pyplot as plt
+
+        # Create axes
+        fig, ax1 = plt.subplots()
+        ax2 = ax1.twinx()
+
+        ax1.plot(self.a_bias, color='b')
+        ax1.set_xlabel('step')
+        ax1.set_ylabel('alpha')
+
+        ax2.plot(self.b_bias, color='r')
+        ax2.set_ylabel('beta')
+
+        # Change color of each axis
+        def color_y_axis(ax, color):
+            """Color your axes."""
+            for t in ax.get_yticklabels():
+                t.set_color(color)
+            return None
+
+        plt.title('biases')
+        color_y_axis(ax1, 'b')
+        color_y_axis(ax2, 'r')
+        plt.show()
+
+        ###############
+        fig, ax1 = plt.subplots()
+        ax2 = ax1.twinx()
+
+        ax1.plot(self.a_weights_min, color='blue',
+                 linestyle='dotted', label='min', linewidth=2)
+        ax1.plot(self.a_weights_mean, color='blue',
+                 linestyle='solid', label='mean', linewidth=1)
+        ax1.plot(self.a_weights_max, color='blue',
+                 linestyle='dotted', label='max', linewidth=2)
+
+        ax1.set_xlabel('step')
+        ax1.set_ylabel('alpha')
+
+        ax2.plot(self.b_weights_min, color='red',
+                 linestyle='dotted', linewidth=2)
+        ax2.plot(self.b_weights_mean, color='red',
+                 linestyle='solid', linewidth=1)
+        ax2.plot(self.b_weights_max, color='red',
+                 linestyle='dotted', linewidth=2)
+        ax2.set_ylabel('beta')
+
+        # Change color of each axis
+        def color_y_axis(ax, color):
+            """Color your axes."""
+            for t in ax.get_yticklabels():
+                t.set_color(color)
+            return None
+
+        plt.title('weights (min,mean,max)')
+        color_y_axis(ax1, 'b')
+        color_y_axis(ax2, 'r')
+        plt.show()
