@@ -11,14 +11,15 @@ python:
   - "3.5-dev" # 3.5 development branch
   - "3.6"
   - "3.6-dev" # 3.6 development branch
-- python: 2.7
-  env: KERAS_BACKEND=theano THEANO_FLAGS=optimizer=fast_compile
-- python: 3.6
-  env: KERAS_BACKEND=theano THEANO_FLAGS=optimizer=fast_compile
-- python: 2.7
-  env: KERAS_BACKEND=cntk PYTHONWARNINGS=ignore
-- python: 3.6
-  env: KERAS_BACKEND=cntk PYTHONWARNINGS=ignore
+
+matrix:
+  include:
+    - python: 
+      - '2.7' 
+      - '3.6' 
+      env: 
+        - KERAS_BACKEND=theano THEANO_FLAGS=optimizer=fast_compile
+        - KERAS_BACKEND=cntk PYTHONWARNINGS=ignore
 
 # command to install dependencies
 install:
