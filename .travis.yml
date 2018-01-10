@@ -4,29 +4,29 @@ language: python
 
 cache: pip
 
-python:
-  - "2.7"
-  - "3.4"
-  - "3.5"
-  - "3.5-dev" # 3.5 development branch
-  - "3.6"
-  - "3.6-dev" # 3.6 development branch
-
 matrix:
-  include:
-    - python: 
-      - '2.7' 
-      - '3.6' 
-      env: 
-        - KERAS_BACKEND=theano THEANO_FLAGS=optimizer=fast_compile
-        - KERAS_BACKEND=cntk PYTHONWARNINGS=ignore
+    include:
+        - python: 2.7
+        - python: 3.4
+        - python: 3.5
+        - python: 3.5-dev
+        - python: 3.6
+        - python: 3.6-dev
+        - python: 3.6
+        - python: 2.7
+          env: KERAS_BACKEND=theano THEANO_FLAGS=optimizer=fast_compile
+        - python: 3.6
+          env: KERAS_BACKEND=theano THEANO_FLAGS=optimizer=fast_compile
+        - python: 2.7
+          env: KERAS_BACKEND=cntk PYTHONWARNINGS=ignore
+        - python: 3.6
+          env: KERAS_BACKEND=cntk PYTHONWARNINGS=ignore
 
 # command to install dependencies
 install:
   - pip install --upgrade pip setuptools
   - cd python && pip install -r requirements-ci.txt
 
-  # install cntk
   - if [[ "$KERAS_BACKEND" == "cntk" ]]; then
       pip install cntk;
     elif [[ "$KERAS_BACKEND" == "theano" ]]; then
