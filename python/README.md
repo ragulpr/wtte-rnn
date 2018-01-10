@@ -69,7 +69,14 @@ $ pip install -e .[build,test,dev,tf]
 ```
 
 ## Contributing
+Contributions/PR/Comments etc are very welcome! Post an issue if you have any questions and feel free to reach out to egil.martinsson[at]gmail.com.
 
-Reach out to egil.martinsson[at]gmail.com if you have any questions.
-Contributions/PR/Comments etc are very welcome!
+### Contributors (by order of commit)
 
+* Egil Martinsson
+* Clay Kim
+* Jannik Hoffjann
+* Daniel Klevebring
+* Jeongkyu Shin 
+* Joongi Kim 
+* Jonghyun Park
