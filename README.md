@@ -12,7 +12,7 @@ WTTE-RNN is an algorithm and a philosophy about how this should be done.
 * [blog post](https://ragulpr.github.io/2016/12/22/WTTE-RNN-Hackless-churn-modeling/)
 * [master thesis](https://ragulpr.github.io/assets/draft_master_thesis_martinsson_egil_wtte_rnn_2016.pdf)
 * Quick visual intro to the [model](https://imgur.com/a/HX4KQ)
-* Jupyter notebook: [basics](examples/keras/simple_example.ipynb)
+* Jupyter notebooks: [basics](examples/keras/simple_example.ipynb), [more](https://github.com/ragulpr/wtte-rnn-examples)
 
 
 # Installation
@@ -93,27 +93,13 @@ Pull-requests, recommendations, comments and contributions very welcome.
 * Weibull functions (cdf, pdf, quantile, mean etc)
 * Objective functions written for:
   - Tensorflow
-  - Keras
+  - Keras (Tensorflow + Theano) ✔
 * Keras helpers
   - Weibull output layers
   - Loss functions
   - Callbacks
 * ~~ Lots of example-implementations ~~
     - [Basic notebook](examples/keras/simple_example.ipynb) will be kept here but to save space and encourage viz check out [the examples-repo](https://github.com/ragulpr/wtte-rnn-examples) or fork your notebooks there
-
-## Multi-framework support
-
-The core technology is the objective functions.
-We plan to make them to be reusable with any machine-learning framework.
-
-* TensorFlow ✔
-* Keras (TensorFlow wrapper) ✔
-* MXnet
-* Theano
-* Torch
-* h2o
-* scikitFlow
-* MLlib
 
 # Licensing
 
@@ -131,7 +117,14 @@ We plan to make them to be reusable with any machine-learning framework.
 ```
 
 ## Contributing
+Contributions/PR/Comments etc are very welcome! Post an issue if you have any questions and feel free to reach out to egil.martinsson[at]gmail.com.
 
-Reach out to egil.martinsson[at]gmail.com if you have any questions.
-If you can, please open an issue so other can join in.
-Contributions/PR/Comments etc are very welcome!
+### Contributors (by order of commit)
+
+* Egil Martinsson
+* Clay Kim
+* Jannik Hoffjann
+* Daniel Klevebring
+* Jeongkyu Shin 
+* Joongi Kim 
+* Jonghyun Park

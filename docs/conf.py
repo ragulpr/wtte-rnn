@@ -54,7 +54,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'WTTE-RNN'
-copyright = '2016-2017. Egil Martinsson and contributors'
+copyright = '2016-2018. Egil Martinsson and contributors'
 author = 'Contributors.'
 
 # The version info for the project you're documenting, acts as replacement for
