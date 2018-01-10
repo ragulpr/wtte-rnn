@@ -30,7 +30,7 @@ WTTE-RNN은 이러한 문제가 어떻게 다루어져야 하는가에 대한 �
 
 ![중도절단된 데이터](./readme_figs/data.gif)
 
-일종의 트릭으로, TTE 자체를 예측하는 대신 기계 학습 모델이 *확률 분포의 매개 변수* 를 출력하도록 해 봅시다. 어떤 확률 분포도 가능합니다만, 그 [굉장함](https://ragulpr.github.io/2016/12/22/WTTE-RNN-Hackless-churn-modeling/#embrace-the-Weibull-euphoria) 때문에 *Weibull 분포* 를 좋아하므로 사용했습니다. 기계 학습 알고리즘 또한 그래디언트 기반의 임의의 알고리즘이 될 수 있습니다만, 우리가 그 [굉장함](http://karpathy.github.io/2015/05/21/rnn-effectiveness/)때문에 RNN을 좋아하므로 RNN을 선택했습니다.
+일종의 트릭으로, TTE 자체를 예측하는 대신 기계 학습 모델이 *확률 분포의 매개 변수* 를 출력하도록 해 봅시다. 어떤 확률 분포도 가능합니다만, 그 [굉장함](https://ragulpr.github.io/2016/12/22/WTTE-RNN-Hackless-churn-modeling/#embrace-the-Weibull-euphoria) 을 좋아해서 *Weibull 분포* 를 사용했습니다. 기계 학습 알고리즘 또한 그래디언트 기반의 임의의 알고리즘이 될 수 있습니다만, 우리가 그 [굉장함](http://karpathy.github.io/2015/05/21/rnn-effectiveness/)을 좋아해서 RNN을 선택했습니다.
 
 
 ![WTTE-RNN 구조 예제](./readme_figs/fig_rnn_weibull.png)
