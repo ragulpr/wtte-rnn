@@ -74,7 +74,7 @@ def output_lambda(x, init_alpha=1.0, max_beta_value=5.0,
 
     """
     if max_beta_value is None or max_beta_value > 3:
-        if K.epsilon() <= 1e-07 and K.backend() == 'tensorflow':
+        if K.epsilon() > 1e-07 and K.backend() == 'tensorflow':
             message = "\
             Using tensorflow backend and allowing high `max_beta_value` may lead to\n\
             gradient NaN during training unless `K.epsilon()` is small.\n\

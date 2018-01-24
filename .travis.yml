@@ -4,18 +4,28 @@ language: python
 
 cache: pip
 
-python:
-  - "2.7"
-  - "3.4"
-  - "3.5"
-  - "3.5-dev" # 3.5 development branch
-  - "3.6"
-  - "3.6-dev" # 3.6 development branch
+matrix:
+    include:
+        - python: 2.7
+        - python: 3.4
+        - python: 3.5
+        - python: 3.5-dev
+        - python: 3.6
+        - python: 3.6-dev
+        - python: 3.6
+        - python: 2.7
+          env: KERAS_BACKEND=theano THEANO_FLAGS=optimizer=fast_compile
+        - python: 3.6
+          env: KERAS_BACKEND=theano THEANO_FLAGS=optimizer=fast_compile
 
 # command to install dependencies
 install:
   - pip install --upgrade pip setuptools
   - cd python && pip install -r requirements-ci.txt
+
+  - if [[ "$KERAS_BACKEND" == "theano" ]]; then
+      pip install theano;
+    fi
 
 # command to run tests
 # (we are already in "python" directory here)
