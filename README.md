@@ -13,7 +13,8 @@ WTTE-RNN is an algorithm and a philosophy about how this should be done.
 * [master thesis](https://ragulpr.github.io/assets/draft_master_thesis_martinsson_egil_wtte_rnn_2016.pdf)
 * Quick visual intro to the [model](https://imgur.com/a/HX4KQ)
 * Jupyter notebooks: [basics](examples/keras/simple_example.ipynb), [more](https://github.com/ragulpr/wtte-rnn-examples)
-
+* Gianmario Spacagna's [implementation](https://github.com/gm-spacagna/deep-ttf/) for Time-To-Failure.
+* Korean [README](./README.ko.md)
 
 # Installation
 
@@ -81,7 +82,7 @@ Global features can have this effect if not properly treated.
 # Status and Roadmap
 
 The project is under development.  The goal is to create a forkable and easily
-deployable model framework.  WTTE-RNN is the algorithm but the whole project aims to be so much more. It's a visual philosophy and an opinionated idea about how churn-monitoring and reporting can be made beautiful and easy.  
+deployable model framework.  WTTE is the algorithm but the whole project aims to be more. It's a visual philosophy and an opinionated idea about how churn-monitoring and reporting can be made beautiful and easy. 
 
 Pull-requests, recommendations, comments and contributions very welcome.
 
@@ -91,9 +92,9 @@ Pull-requests, recommendations, comments and contributions very welcome.
   - Data pipeline transformations (`pandas.DataFrame` of expected format to numpy)
   - Time to event and censoring indicator calculations
 * Weibull functions (cdf, pdf, quantile, mean etc)
-* Objective functions written for:
+* Objective functions:
   - Tensorflow
-  - Keras (Tensorflow + Theano) ✔
+  - Keras (Tensorflow + Theano)
 * Keras helpers
   - Weibull output layers
   - Loss functions
@@ -122,6 +123,7 @@ Contributions/PR/Comments etc are very welcome! Post an issue if you have any qu
 ### Contributors (by order of commit)
 
 * Egil Martinsson
+* Dayne Batten (made the first keras-implementation)
 * Clay Kim
 * Jannik Hoffjann
 * Daniel Klevebring

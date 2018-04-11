@@ -9,6 +9,7 @@ from six.moves import xrange
 from .tte_util import get_is_not_censored
 from .tte_util import get_tte
 
+
 def get_padded_seq_lengths(padded):
     """Returns the number of (seq_len) non-nan elements per sequence.
 
@@ -25,6 +26,7 @@ def get_padded_seq_lengths(padded):
         # TODO
 
     return seq_lengths
+
 
 def df_to_array(df, column_names, nanpad_right=True, return_lists=False,
                 id_col='id', t_col='t'):
@@ -252,7 +254,7 @@ def padded_events_to_not_censored_vectorized(events):
 def padded_events_to_not_censored(events, discrete_time):
     seq_lengths = get_padded_seq_lengths(events)
     n_seqs = events.shape[0]
-    is_not_censored = np.copy(events)
+    is_not_censored = events.copy()
 
     for i in xrange(n_seqs):
         if seq_lengths[i] > 0:
@@ -280,7 +282,7 @@ def _align_padded(padded, align_right):
     :param Array padded: padded array
     :param align_right: Determines padding orientation (right or left). If `True`, pads to right direction.
     """
-    padded = np.copy(padded)
+    padded = padded.copy()
 
     seq_lengths = get_padded_seq_lengths(padded)
     if len(padded.shape) == 2:
@@ -302,8 +304,8 @@ def _align_padded(padded, align_right):
         for i in xrange(n_seqs):
             n = seq_lengths[i]
             if n > 0:
-                padded[i, (n_timesteps - n):, :] = padded[i, :n, :]
-                padded[i, :(n_timesteps - n), :] = np.nan
+                padded[i, (n_timesteps - n):] = padded[i, :n]
+                padded[i, :(n_timesteps - n)] = np.nan
     else:
         for i in xrange(n_seqs):
             n = seq_lengths[i]
@@ -493,10 +495,15 @@ def shift_discrete_padded_features(padded, fill=0):
     padded[:, 0] = fill
     return padded
 
-def normalize_padded(padded, means=None, stds=None):
+def normalize_padded(padded, means=None, stds=None,only_nonzero = False,epsilon = 1e-6):
     """Normalize by last dim of padded with means/stds or calculate them.
+        
+        If `means` or `stds` is passed, it simply shifts/scales by them.
+        If only_nonzero, only normalizes nonzero entries. This should be the choice
+        for sparse event data but not default for legacy reasons.
 
-        .. TODO::
+        :param Boolean only_nonzero: 
+
            * consider importing instead ex:
 
                 from sklearn.preprocessing import StandardScaler, RobustScaler
@@ -505,42 +512,72 @@ def normalize_padded(padded, means=None, stds=None):
                 x_test  = robust_scaler.transform(x_test)
                 ValueError: Found array with dim 3. RobustScaler expected <= 2.
 
-           * Don't normalize binary features
-           * If events are sparse then this may lead to huge values.
+           * 
     """
-    # TODO epsilon choice is random
-    epsilon = 1e-6
-    original_dtype = padded.dtype
 
     is_flat = len(padded.shape) == 2
     if is_flat:
         padded = np.expand_dims(padded, axis=-1)
 
-    n_features = padded.shape[2]
-    n_obs = padded.shape[0] * padded.shape[1]
+    n_sequences,n_timesteps,n_features = padded.shape
+    n_obs = n_sequences * n_timesteps
+    
+    if only_nonzero:
+        zeros_nanmask = np.zeros_like(padded)
+        # TODO catch if no nans or zeros?
+        zeros_nanmask[np.isnan(padded)] = np.nan
+        zeros_nanmask[padded==0] = np.nan
 
     if means is None:
-        means = np.nanmean(np.float128(
-            padded.reshape(n_obs, n_features)), axis=0)
+        if only_nonzero:
+            vals = (padded+zeros_nanmask).reshape(n_obs, n_features)
+        else:
+            vals = padded.reshape(n_obs, n_features)
+        means = np.nanmean(vals,axis=0,keepdims=False,dtype=np.float128)
+        del vals
+        
+        if any(np.isnan(means)):
+            means[np.isnan(means)] = 0 # If mean of empty slice.
 
-    means = means.reshape([1, 1, n_features])
-    padded = padded - means
-
+        means = means.astype(padded.dtype)
+    
     if stds is None:
-        stds = np.nanstd(np.float128(
-            padded.reshape(n_obs, n_features)), axis=0)
+        if only_nonzero:
+            vals = (padded+zeros_nanmask).reshape(n_obs, n_features)
+        else:
+            vals = padded.reshape(n_obs, n_features)
+        stds = np.nanstd(vals,axis=0,keepdims=False,dtype=np.float128)
+        del vals
+
+        if any(np.isnan(stds)):
+            stds[np.isnan(stds)] = 1 # If no non-nan (and/or nonzero) elements
+        stds = stds.astype(padded.dtype)
+        
+    if (stds < epsilon).any():
+        # Near constant features.
+        if only_nonzero:
+            # Set nonzero elements to 1
+            means[stds < epsilon] = means-1
+        else:
+            print('Warning. low-variance cols, indx: ', np.where(stds < epsilon)[0])
+            print('(Could be binary columns.)  stds: ', stds[stds < epsilon])
+
+        # Result is (small number)/1.0 as mean will be subtracted.
+        stds[stds < epsilon] = 1
 
     stds = stds.reshape([1, 1, n_features])
-    if (stds < epsilon).any():
-        print('warning. Constant cols: ', np.where((stds < epsilon).flatten()))
-        stds[stds < epsilon] = 1.0
-        # should be (small number)/1.0 as mean is subtracted.
-        # Possible prob depending on machine err
+    means = means.reshape([1, 1, n_features])
 
-    # 128 float cast otherwise
-    padded = (padded / stds).astype(original_dtype)
+    if only_nonzero:
+        # Don't shift zero-elements.
+        padded = padded - means*(padded!=0)    
+    else:
+        padded = padded - means
+
+    padded = padded/stds
 
     if is_flat:
-        # Return to flat
-        padded = np.squeeze(padded)
+        # Return to original shape
+        padded = padded.reshape(n_sequences,n_timesteps)
     return padded, means, stds
+

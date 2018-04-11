@@ -87,9 +87,53 @@ def test_normalize_padded():
         Assume that a random normal should stay approx unchanged 
         after transformation.
     """
+    # [batch,time,feature]
+    np.random.seed(1)
+    padded = np.random.normal(0, 1, [100000, 10,2])
+    padded_new1, means, stds = normalize_padded(padded,only_nonzero = False)
+    padded_new2, _, _ = normalize_padded(padded, means, stds,only_nonzero = False)
+    np.testing.assert_almost_equal(padded,padded_new1,decimal=2)
+    np.testing.assert_almost_equal(padded,padded_new2,decimal=2)
 
-    padded = np.random.normal(0, 1, [10000, 10, 10])
-    padded_new, means, stds = normalize_padded(padded)
-    padded_new, _, _ = normalize_padded(padded, means, stds)
+    # [batch,time]
+    np.random.seed(1)
+    padded = np.random.normal(0, 1, [100000, 10])
+    padded_new1, means, stds = normalize_padded(padded,only_nonzero = False)
+    padded_new2, _, _ = normalize_padded(padded, means, stds,only_nonzero = False)
+    np.testing.assert_almost_equal(padded,padded_new1,decimal=2)
+    np.testing.assert_almost_equal(padded,padded_new2,decimal=2)
 
-    assert np.abs(padded-padded_new).mean()<0.01
+    # [batch,time,feature] with nans and zeros both settings
+    np.random.seed(1)
+    padded = np.random.normal(0, 1, [100000, 10, 2])
+    padded[-10:] = np.nan
+    padded[:10] = 0
+    padded_new1, means, stds = normalize_padded(padded,only_nonzero = True)
+    padded_new2, _, _ = normalize_padded(padded, means, stds,only_nonzero = True)
+    np.testing.assert_almost_equal(padded,padded_new1,decimal=2)
+    np.testing.assert_almost_equal(padded,padded_new2,decimal=2)
+
+    padded_new1, means, stds = normalize_padded(padded,only_nonzero = True)
+    padded_new2, _, _ = normalize_padded(padded, means, stds,only_nonzero = True)
+    np.testing.assert_almost_equal(padded,padded_new1,decimal=2)
+    np.testing.assert_almost_equal(padded,padded_new2,decimal=2)
+
+    # Binary data
+    # With only_nonzero should map binary to unchanged
+    padded = (np.random.normal(0, 1, [100, 10, 5])>2).astype(float)
+    padded[-10:] = np.nan
+
+    padded_new1, means, stds = normalize_padded(padded,only_nonzero=True)
+    padded_new2, _, _ = normalize_padded(padded, means, stds,only_nonzero=True)
+
+    np.testing.assert_almost_equal(padded_new1,padded_new2,decimal=2)
+    np.testing.assert_almost_equal(padded,padded_new1,decimal=2)
+
+    # Should map scaled binary to [0,1]
+    padded_new1, means, stds = normalize_padded(padded*10,only_nonzero=True)
+    padded_new2, _, _ = normalize_padded(padded*10, means, stds,only_nonzero=True)
+
+    np.testing.assert_almost_equal(padded_new1,padded_new2,decimal=2)
+    np.testing.assert_almost_equal(padded,padded_new1,decimal=2)
+
+
