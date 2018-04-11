@@ -40,6 +40,10 @@ def data_pipeline(
     if timestep_aggregation_dict is None:
         timestep_aggregation_dict = dict.fromkeys(column_names, "sum")
 
+    # Asserts that column_names order is respected.
+    for key in column_names:
+        timestep_aggregation_dict[key] = timestep_aggregation_dict.pop(key)
+
     if discrete_time:
         # Lower resolution on unix-timestamp ex. to day
         df[abs_time_col] = time_sec_interval * \
@@ -116,6 +120,7 @@ def data_pipeline(
         df, id_col=id_col, column_names=column_names, t_col=t_col)
 
     # If some columns where specified as constant
+    # TODO carry forward in time instead.
     if constant_cols is not None:
         if len(constant_cols) > 0:
             constant_cols_ix = []
