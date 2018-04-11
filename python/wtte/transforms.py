@@ -9,6 +9,7 @@ from six.moves import xrange
 from .tte_util import get_is_not_censored
 from .tte_util import get_tte
 
+
 def get_padded_seq_lengths(padded):
     """Returns the number of (seq_len) non-nan elements per sequence.
 
@@ -25,6 +26,7 @@ def get_padded_seq_lengths(padded):
         # TODO
 
     return seq_lengths
+
 
 def df_to_array(df, column_names, nanpad_right=True, return_lists=False,
                 id_col='id', t_col='t'):
@@ -252,7 +254,7 @@ def padded_events_to_not_censored_vectorized(events):
 def padded_events_to_not_censored(events, discrete_time):
     seq_lengths = get_padded_seq_lengths(events)
     n_seqs = events.shape[0]
-    is_not_censored = np.copy(events)
+    is_not_censored = events.copy()
 
     for i in xrange(n_seqs):
         if seq_lengths[i] > 0:
@@ -280,7 +282,7 @@ def _align_padded(padded, align_right):
     :param Array padded: padded array
     :param align_right: Determines padding orientation (right or left). If `True`, pads to right direction.
     """
-    padded = np.copy(padded)
+    padded = padded.copy()
 
     seq_lengths = get_padded_seq_lengths(padded)
     if len(padded.shape) == 2:
