@@ -122,6 +122,7 @@ Contributions/PR/Comments etc are very welcome! Post an issue if you have any qu
 ### Contributors (by order of commit)
 
 * Egil Martinsson
+* Dayne Batten (made the first keras-implementation)
 * Clay Kim
 * Jannik Hoffjann
 * Daniel Klevebring
