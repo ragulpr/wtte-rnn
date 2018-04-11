@@ -304,8 +304,8 @@ def _align_padded(padded, align_right):
         for i in xrange(n_seqs):
             n = seq_lengths[i]
             if n > 0:
-                padded[i, (n_timesteps - n):, :] = padded[i, :n, :]
-                padded[i, :(n_timesteps - n), :] = np.nan
+                padded[i, (n_timesteps - n):] = padded[i, :n]
+                padded[i, :(n_timesteps - n)] = np.nan
     else:
         for i in xrange(n_seqs):
             n = seq_lengths[i]
