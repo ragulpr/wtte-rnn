@@ -14,6 +14,7 @@ WTTE-RNN is an algorithm and a philosophy about how this should be done.
 * Quick visual intro to the [model](https://imgur.com/a/HX4KQ)
 * Jupyter notebooks: [basics](examples/keras/simple_example.ipynb), [more](https://github.com/ragulpr/wtte-rnn-examples)
 * Gianmario Spacagna's [implementation](https://github.com/gm-spacagna/deep-ttf/) for Time-To-Failure.
+* Korean [README](./README.ko.md)
 
 # Installation
 
