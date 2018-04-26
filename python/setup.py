@@ -30,7 +30,7 @@ docs_requires = [
 
 setup(
     name='wtte',
-    version='1.0.3',
+    version='1.0.3-hotfix.1',
     description='Weibull Time To Event model. A Deep Learning model for churn- and failure prediction and everything else.',
     author='Egil Martinsson',
     author_email='egil.martinsson@gmail.com',
