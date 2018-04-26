@@ -557,7 +557,7 @@ def normalize_padded(padded, means=None, stds=None,only_nonzero = False,epsilon 
         # Near constant features.
         if only_nonzero:
             # Set nonzero elements to 1
-            means[stds < epsilon] = means-1
+            means[stds < epsilon] = means[stds < epsilon]-1
         else:
             print('Warning. low-variance cols, indx: ', np.where(stds < epsilon)[0])
             print('(Could be binary columns.)  stds: ', stds[stds < epsilon])
