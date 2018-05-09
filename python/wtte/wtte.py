@@ -2,6 +2,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from math import log
+
 import warnings
 import numpy as np
 
@@ -147,22 +149,56 @@ class OuputActivation(object):
 # Backwards Compatibility
 output_activation = OuputActivation
 
-class loss(object):
-    """ Creates a keras WTTE-loss function.
-        If regularize is called, a penalty is added creating 'wall' that beta
-        do not want to pass over. This is not necessary with Sigmoid-beta
-        activation.
 
+def _keras_split(y_true, y_pred):
+    """
+        Everything is a hack around the y_true,y_pred paradigm.
+    """
+    y, u = _keras_unstack_hack(y_true)
+    a, b = _keras_unstack_hack(y_pred)
+
+    return y, u, a, b
+
+keras_split = _keras_split
+
+
+def loglik_discrete(y, u, a, b, epsilon=K.epsilon()):
+    hazard0 = K.pow((y + epsilon) / a, b)
+    hazard1 = K.pow((y + 1.0) / a, b)
+
+    loglikelihoods = u * \
+        K.log(K.exp(hazard1 - hazard0) - (1.0 - epsilon)) - hazard1
+    return loglikelihoods
+
+
+def loglik_continuous(y, u, a, b, epsilon=K.epsilon()):
+    ya = (y + epsilon) / a
+    loglikelihoods = u * (K.log(b) + b * K.log(ya)) - K.pow(ya, b)
+    return loglikelihoods
+
+
+def loglik_continuous_conditional_correction(y, u, a, b, epsilon=K.epsilon()):
+    """Integrated conditional excess loss.
+        Explanation TODO
+    """
+    ya = (y + epsilon) / a
+    loglikelihoods = y * \
+        (u * (K.log(b) + b * K.log(ya)) - (b / (b + 1.)) * K.pow(ya, b))
+    return loglikelihoods
+
+
+class Loss(object):
+    """ Creates a keras WTTE-loss function.
         - Usage
 
             :Example:
 
             .. code-block:: python
-               loss = wtte.loss(kind='discrete').loss_function
+               loss = wtte.Loss(kind='discrete').loss_function
                model.compile(loss=loss, optimizer=RMSprop(lr=0.01))
 
                # And with masking:
-               loss = wtte.loss(kind='discrete',reduce_loss=False).loss_function
+               loss = wtte.Loss(kind='discrete',reduce_loss=False).loss_function
                model.compile(loss=loss, optimizer=RMSprop(lr=0.01),
                               sample_weight_mode='temporal')
 
@@ -177,12 +213,14 @@ class loss(object):
     def __init__(self,
                  kind,
                  reduce_loss=True,
+                 eps_prob=1e-6,
                  regularize=False,
                  location=10.0,
                  growth=20.0):
 
         self.kind = kind
         self.reduce_loss = reduce_loss
+        self.eps_prob = eps_prob
 
         self.regularize = regularize
         if regularize:
@@ -190,63 +228,24 @@ class loss(object):
             self.growth = growth
 
     def loss_function(self, y_true, y_pred):
-        def keras_split(y_true, y_pred):
-            """
-                Everything is a hack around the y_true,y_pred paradigm.
-            """
-            y, u = _keras_unstack_hack(y_true)
-            a, b = _keras_unstack_hack(y_pred)
 
-            return y, u, a, b
-
-        def loglik_discrete(y, u, a, b, epsilon=1e-35):
-            hazard0 = K.pow((y + epsilon) / a, b)
-            hazard1 = K.pow((y + 1.0) / a, b)
-
-            loglikelihoods = u * \
-                K.log(K.exp(hazard1 - hazard0) - 1.0) - hazard1
-            return loglikelihoods
-
-        def loglik_continuous(y, u, a, b, epsilon=1e-35):
-            ya = (y + epsilon) / a
-            loglikelihoods = u * (K.log(b) + b * K.log(ya)) - K.pow(ya, b)
-            return loglikelihoods
-
-        def loglik_continuous_conditional_correction(y, u, a, b, epsilon=1e-35):
-            """Integrated conditional excess loss.
-                Explanation TODO
-            """
-            ya = (y + epsilon) / a
-            loglikelihoods = y * \
-                (u * (K.log(b) + b * K.log(ya)) - (b / (b + 1.)) * K.pow(ya, b))
-            return loglikelihoods
-
-        def penalty_term(b, location, growth):
-            scale = growth / location
-            penalty = K.exp(scale * (b - location))
-            return penalty
-
-        def accumulate_loss(loglikelihoods):
-            loss = -1.0 * K.mean(loglikelihoods, axis=-1)
-            return loss
-
-        y, u, a, b = keras_split(y_true, y_pred)
-
+        y, u, a, b = _keras_split(y_true, y_pred)
         if self.kind == 'discrete':
             loglikelihoods = loglik_discrete(y, u, a, b)
         elif self.kind == 'continuous':
             loglikelihoods = loglik_continuous(y, u, a, b)
 
-        if self.regularize:
-            loglikelihoods = loglikelihoods + \
-                penalty_term(b, self.location, self.growth)
-
+        loglikelihoods = K.clip(loglikelihoods, log(
+            self.eps_prob), log(1 - self.eps_prob))
         if self.reduce_loss:
-            loss = accumulate_loss(loglikelihoods)
+            loss = -1.0 * K.mean(loglikelihoods, axis=-1)
         else:
             loss = -loglikelihoods
 
         return loss
+
+# For backwards-compatibility
+loss = Loss
 
 
 class WeightWatcher(Callback):
