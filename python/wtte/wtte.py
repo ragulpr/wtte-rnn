@@ -66,15 +66,16 @@ def output_lambda(x, init_alpha=1.0, max_beta_value=5.0,
         :param max_beta_value: maximum beta value. Default value is 5.0.
         :param max_alpha_value: maxumum alpha value. Default is `None`.
         :type x: Array
-        :type init_alpha: Integer
-        :type max_beta_value: Integer
-        :type max_alpha_value: Integer
+        :type init_alpha: Float
+        :type max_beta_value: Float
+        :type max_alpha_value: Float
         :return x: A positive `Tensor` of same shape as input
         :rtype: Array
 
     """
     if max_beta_value is None or max_beta_value > 3:
         if K.epsilon() > 1e-07 and K.backend() == 'tensorflow':
+            # TODO need to think this through lol
             message = "\
             Using tensorflow backend and allowing high `max_beta_value` may lead to\n\
             gradient NaN during training unless `K.epsilon()` is small.\n\
@@ -110,16 +111,17 @@ def output_lambda(x, init_alpha=1.0, max_beta_value=5.0,
     return x
 
 
-class output_activation(object):
+class OuputActivation(object):
     """ Elementwise computation of alpha and regularized beta.
 
-        Object-Oriented Wrapper to `output_lambda` using keras.layers.Activation.
 
+        Wrapper to `output_lambda` using keras.layers.Activation. 
+        See this for details.
 
         - Usage
             .. code-block:: python
 
-               wtte_activation = wtte.output_activation(init_alpha=1.,
+               wtte_activation = wtte.OuputActivation(init_alpha=1.,
                                                  max_beta_value=4.0).activation
 
                model.add(Dense(2))
@@ -142,6 +144,8 @@ class output_activation(object):
 
         return ab
 
+# Backwards Compatibility
+output_activation = OuputActivation
 
 class loss(object):
     """ Creates a keras WTTE-loss function.
