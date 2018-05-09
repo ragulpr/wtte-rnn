@@ -91,7 +91,7 @@ def output_lambda(x, init_alpha=1.0, max_beta_value=5.0,
     if alpha_kernel_scalefactor is None:
         a = init_alpha * K.exp(a)
     else:
-        a = init_alpha * K.exp(alpha_kernel_scalefactor*a)
+        a = init_alpha * K.exp(alpha_kernel_scalefactor * a)
 
     m = max_beta_value
     if m > 1.05:  # some value >>1.0
@@ -215,17 +215,18 @@ class Loss(object):
                  reduce_loss=True,
                  eps_prob=1e-6,
                  regularize=False,
-                 location=10.0,
-                 growth=20.0):
+                 location=None,
+                 growth=None):
 
         self.kind = kind
         self.reduce_loss = reduce_loss
         self.eps_prob = eps_prob
 
-        self.regularize = regularize
-        if regularize:
-            self.location = location
-            self.growth = growth
+        if regularize == True or location is not None or growth is not None:
+            raise DeprecationWarning('Directly penalizing beta has been found \
+                                      to be unneccessary when using bounded activation \
+                                      and clipping of log-likelihood.\
+                                      Use this method instead.')
 
     def loss_function(self, y_true, y_pred):
 
