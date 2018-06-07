@@ -99,14 +99,9 @@ def output_lambda(x, init_alpha=1.0, max_beta_value=5.0,
         # assuming input is around 0.0
         _shift = np.log(m - 1.0)
 
-        b = K.sigmoid(b - _shift)
+        b = m*K.sigmoid(b - _shift)
     else:
-        b = K.sigmoid(b)
-
-    # Clipped sigmoid : has zero gradient at 0,1
-    # Reduces the small tendency of instability after long training
-    # by zeroing gradient.
-    b = m * K.clip(x=b, min_value=K.epsilon(), max_value=1. - K.epsilon())
+        b = m*K.sigmoid(b)
 
     x = K.stack([a, b], axis=-1)
 
