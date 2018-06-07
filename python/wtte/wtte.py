@@ -208,6 +208,13 @@ class Loss(object):
             Therefore we do not sum/reduce down to scalar (dim 1), instead return a 
             tensor (with reduce_loss=False).
 
+        :param kind:  One of 'discrete' or 'continuous'
+        :param reduce_loss: 
+        :param eps_prob: Clip likelihood to [log(eps_prob),log(1-eps_prob)]
+        :param regularize: Deprecated.
+        :param location: Deprecated.
+        :param growth: Deprecated.
+        :type reduce_loss: Boolean
     """
 
     def __init__(self,
