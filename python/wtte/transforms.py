@@ -495,9 +495,10 @@ def shift_discrete_padded_features(padded, fill=0):
     padded[:, 0] = fill
     return padded
 
-def normalize_padded(padded, means=None, stds=None,only_nonzero = False,epsilon = 1e-6):
+
+def normalize_padded(padded, means=None, stds=None, only_nonzero=False, epsilon=1e-6):
     """Normalize by last dim of padded with means/stds or calculate them.
-        
+
         If `means` or `stds` is passed, it simply shifts/scales by them.
         If only_nonzero, only normalizes nonzero entries. This should be the choice
         for sparse event data but not default for legacy reasons.
@@ -511,47 +512,48 @@ def normalize_padded(padded, means=None, stds=None,only_nonzero = False,epsilon 
     if is_flat:
         padded = np.expand_dims(padded, axis=-1)
 
-    n_sequences,n_timesteps,n_features = padded.shape
+    n_sequences, n_timesteps, n_features = padded.shape
     n_obs = n_sequences * n_timesteps
-    
+
     if only_nonzero:
         zeros_nanmask = np.zeros_like(padded)
         # TODO catch if no nans or zeros?
         zeros_nanmask[np.isnan(padded)] = np.nan
-        zeros_nanmask[padded==0] = np.nan
+        zeros_nanmask[padded == 0] = np.nan
 
     if means is None:
         if only_nonzero:
-            vals = (padded+zeros_nanmask).reshape(n_obs, n_features)
+            vals = (padded + zeros_nanmask).reshape(n_obs, n_features)
         else:
             vals = padded.reshape(n_obs, n_features)
-        means = np.nanmean(vals,axis=0,keepdims=False,dtype=np.float128)
+        means = np.nanmean(vals, axis=0, keepdims=False, dtype=np.float128)
         del vals
-        
+
         if any(np.isnan(means)):
-            means[np.isnan(means)] = 0 # If mean of empty slice.
+            means[np.isnan(means)] = 0  # If mean of empty slice.
 
         means = means.astype(padded.dtype)
-    
+
     if stds is None:
         if only_nonzero:
-            vals = (padded+zeros_nanmask).reshape(n_obs, n_features)
+            vals = (padded + zeros_nanmask).reshape(n_obs, n_features)
         else:
             vals = padded.reshape(n_obs, n_features)
-        stds = np.nanstd(vals,axis=0,keepdims=False,dtype=np.float128)
+        stds = np.nanstd(vals, axis=0, keepdims=False, dtype=np.float128)
         del vals
 
         if any(np.isnan(stds)):
-            stds[np.isnan(stds)] = 1 # If no non-nan (and/or nonzero) elements
+            stds[np.isnan(stds)] = 1  # If no non-nan (and/or nonzero) elements
         stds = stds.astype(padded.dtype)
-        
+
     if (stds < epsilon).any():
         # Near constant features.
         if only_nonzero:
             # Set nonzero elements to 1
-            means[stds < epsilon] = means[stds < epsilon]-1
+            means[stds < epsilon] = means[stds < epsilon] - 1
         else:
-            print('Warning. low-variance cols, indx: ', np.where(stds < epsilon)[0])
+            print('Warning. low-variance cols, indx: ',
+                  np.where(stds < epsilon)[0])
             print('(Could be binary columns.)  stds: ', stds[stds < epsilon])
 
         # Result is (small number)/1.0 as mean will be subtracted.
@@ -562,14 +564,13 @@ def normalize_padded(padded, means=None, stds=None,only_nonzero = False,epsilon 
 
     if only_nonzero:
         # Don't shift zero-elements.
-        padded = padded - means*(padded!=0)    
+        padded = padded - means * (padded != 0)
     else:
         padded = padded - means
 
-    padded = padded/stds
+    padded = padded / stds
 
     if is_flat:
         # Return to original shape
-        padded = padded.reshape(n_sequences,n_timesteps)
+        padded = padded.reshape(n_sequences, n_timesteps)
     return padded, means, stds
-

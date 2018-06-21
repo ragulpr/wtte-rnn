@@ -28,7 +28,7 @@ def _keras_unstack_hack(ab):
     return a, b
 
 
-def output_lambda(x, init_alpha=1.0, max_beta_value=5.0,scalefactor = None,
+def output_lambda(x, init_alpha=1.0, max_beta_value=5.0, scalefactor=None,
                   alpha_kernel_scalefactor=None):
     """Elementwise (Lambda) computation of alpha and regularized beta.
 
@@ -85,19 +85,19 @@ def output_lambda(x, init_alpha=1.0, max_beta_value=5.0,scalefactor = None,
             "
             warnings.warn(message)
     if alpha_kernel_scalefactor is not None:
-            message = "`alpha_kernel_scalefactor` deprecated in favor of `scalefactor` scaling both.\n Setting `scalefactor = alpha_kernel_scalefactor`"
-            warnings.warn(message)
-            scalefactor = alpha_kernel_scalefactor
+        message = "`alpha_kernel_scalefactor` deprecated in favor of `scalefactor` scaling both.\n Setting `scalefactor = alpha_kernel_scalefactor`"
+        warnings.warn(message)
+        scalefactor = alpha_kernel_scalefactor
 
     a, b = _keras_unstack_hack(x)
 
     if scalefactor is not None:
         # Done after due to theano bug.
-        a,b = scalefactor*a,scalefactor*b
+        a, b = scalefactor * a, scalefactor * b
 
     # Implicitly initialize alpha:
     a = init_alpha * K.exp(a)
-    
+
     if max_beta_value > 1.05:  # some value >>1.0
         # shift to start around 1.0
         # assuming input is around 0.0
@@ -105,7 +105,7 @@ def output_lambda(x, init_alpha=1.0, max_beta_value=5.0,scalefactor = None,
 
         b = b - _shift
 
-    b = max_beta_value*K.sigmoid(b)
+    b = max_beta_value * K.sigmoid(b)
 
     x = K.stack([a, b], axis=-1)
 
@@ -243,7 +243,8 @@ class Loss(object):
             loglikelihoods = loglik_continuous(y, u, a, b)
 
         if self.clip_prob is not None:
-            loglikelihoods = K.clip(loglikelihoods, log(self.clip_prob), log(1 - self.clip_prob))
+            loglikelihoods = K.clip(loglikelihoods, 
+                log(self.clip_prob), log(1 - self.clip_prob))
         if self.reduce_loss:
             loss = -1.0 * K.mean(loglikelihoods, axis=-1)
         else:
