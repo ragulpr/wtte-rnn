@@ -2,6 +2,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from math import log
+
 import warnings
 import numpy as np
 
@@ -26,7 +28,7 @@ def _keras_unstack_hack(ab):
     return a, b
 
 
-def output_lambda(x, init_alpha=1.0, max_beta_value=5.0,
+def output_lambda(x, init_alpha=1.0, max_beta_value=5.0,scalefactor = None,
                   alpha_kernel_scalefactor=None):
     """Elementwise (Lambda) computation of alpha and regularized beta.
 
@@ -66,60 +68,61 @@ def output_lambda(x, init_alpha=1.0, max_beta_value=5.0,
         :param max_beta_value: maximum beta value. Default value is 5.0.
         :param max_alpha_value: maxumum alpha value. Default is `None`.
         :type x: Array
-        :type init_alpha: Integer
-        :type max_beta_value: Integer
-        :type max_alpha_value: Integer
+        :type init_alpha: Float
+        :type max_beta_value: Float
+        :type max_alpha_value: Float
         :return x: A positive `Tensor` of same shape as input
         :rtype: Array
 
     """
     if max_beta_value is None or max_beta_value > 3:
         if K.epsilon() > 1e-07 and K.backend() == 'tensorflow':
+            # TODO need to think this through lol
             message = "\
             Using tensorflow backend and allowing high `max_beta_value` may lead to\n\
             gradient NaN during training unless `K.epsilon()` is small.\n\
             Call `keras.backend.set_epsilon(1e-08)` to lower epsilon \
             "
             warnings.warn(message)
+    if alpha_kernel_scalefactor is not None:
+            message = "`alpha_kernel_scalefactor` deprecated in favor of `scalefactor` scaling both.\n Setting `scalefactor = alpha_kernel_scalefactor`"
+            warnings.warn(message)
+            scalefactor = alpha_kernel_scalefactor
 
     a, b = _keras_unstack_hack(x)
 
-    # Implicitly initialize alpha:
-    if alpha_kernel_scalefactor is None:
-        a = init_alpha * K.exp(a)
-    else:
-        a = init_alpha * K.exp(alpha_kernel_scalefactor*a)
+    if scalefactor is not None:
+        # Done after due to theano bug.
+        a,b = scalefactor*a,scalefactor*b
 
-    m = max_beta_value
-    if m > 1.05:  # some value >>1.0
+    # Implicitly initialize alpha:
+    a = init_alpha * K.exp(a)
+    
+    if max_beta_value > 1.05:  # some value >>1.0
         # shift to start around 1.0
         # assuming input is around 0.0
-        _shift = np.log(m - 1.0)
+        _shift = np.log(max_beta_value - 1.0)
 
-        b = K.sigmoid(b - _shift)
-    else:
-        b = K.sigmoid(b)
+        b = b - _shift
 
-    # Clipped sigmoid : has zero gradient at 0,1
-    # Reduces the small tendency of instability after long training
-    # by zeroing gradient.
-    b = m * K.clip(x=b, min_value=K.epsilon(), max_value=1. - K.epsilon())
+    b = max_beta_value*K.sigmoid(b)
 
     x = K.stack([a, b], axis=-1)
 
     return x
 
 
-class output_activation(object):
+class OuputActivation(object):
     """ Elementwise computation of alpha and regularized beta.
 
-        Object-Oriented Wrapper to `output_lambda` using keras.layers.Activation.
 
+        Wrapper to `output_lambda` using keras.layers.Activation. 
+        See this for details.
 
         - Usage
             .. code-block:: python
 
-               wtte_activation = wtte.output_activation(init_alpha=1.,
+               wtte_activation = wtte.OuputActivation(init_alpha=1.,
                                                  max_beta_value=4.0).activation
 
                model.add(Dense(2))
@@ -142,23 +145,59 @@ class output_activation(object):
 
         return ab
 
+# Backwards Compatibility
+output_activation = OuputActivation
 
-class loss(object):
+
+def _keras_split(y_true, y_pred):
+    """
+        Everything is a hack around the y_true,y_pred paradigm.
+    """
+    y, u = _keras_unstack_hack(y_true)
+    a, b = _keras_unstack_hack(y_pred)
+
+    return y, u, a, b
+
+keras_split = _keras_split
+
+
+def loglik_discrete(y, u, a, b, epsilon=K.epsilon()):
+    hazard0 = K.pow((y + epsilon) / a, b)
+    hazard1 = K.pow((y + 1.0) / a, b)
+
+    loglikelihoods = u * \
+        K.log(K.exp(hazard1 - hazard0) - (1.0 - epsilon)) - hazard1
+    return loglikelihoods
+
+
+def loglik_continuous(y, u, a, b, epsilon=K.epsilon()):
+    ya = (y + epsilon) / a
+    loglikelihoods = u * (K.log(b) + b * K.log(ya)) - K.pow(ya, b)
+    return loglikelihoods
+
+
+def loglik_continuous_conditional_correction(y, u, a, b, epsilon=K.epsilon()):
+    """Integrated conditional excess loss.
+        Explanation TODO
+    """
+    ya = (y + epsilon) / a
+    loglikelihoods = y * \
+        (u * (K.log(b) + b * K.log(ya)) - (b / (b + 1.)) * K.pow(ya, b))
+    return loglikelihoods
+
+
+class Loss(object):
     """ Creates a keras WTTE-loss function.
-        If regularize is called, a penalty is added creating 'wall' that beta
-        do not want to pass over. This is not necessary with Sigmoid-beta
-        activation.
-
         - Usage
 
             :Example:
 
             .. code-block:: python
-               loss = wtte.loss(kind='discrete').loss_function
+               loss = wtte.Loss(kind='discrete').loss_function
                model.compile(loss=loss, optimizer=RMSprop(lr=0.01))
 
                # And with masking:
-               loss = wtte.loss(kind='discrete',reduce_loss=False).loss_function
+               loss = wtte.Loss(kind='discrete',reduce_loss=False).loss_function
                model.compile(loss=loss, optimizer=RMSprop(lr=0.01),
                               sample_weight_mode='temporal')
 
@@ -168,81 +207,52 @@ class loss(object):
             Therefore we do not sum/reduce down to scalar (dim 1), instead return a 
             tensor (with reduce_loss=False).
 
+        :param kind:  One of 'discrete' or 'continuous'
+        :param reduce_loss: 
+        :param clip_prob: Clip likelihood to [log(clip_prob),log(1-clip_prob)]
+        :param regularize: Deprecated.
+        :param location: Deprecated.
+        :param growth: Deprecated.
+        :type reduce_loss: Boolean
     """
 
     def __init__(self,
                  kind,
                  reduce_loss=True,
+                 clip_prob=1e-6,
                  regularize=False,
-                 location=10.0,
-                 growth=20.0):
+                 location=None,
+                 growth=None):
 
         self.kind = kind
         self.reduce_loss = reduce_loss
+        self.clip_prob = clip_prob
 
-        self.regularize = regularize
-        if regularize:
-            self.location = location
-            self.growth = growth
+        if regularize == True or location is not None or growth is not None:
+            raise DeprecationWarning('Directly penalizing beta has been found \
+                                      to be unneccessary when using bounded activation \
+                                      and clipping of log-likelihood.\
+                                      Use this method instead.')
 
     def loss_function(self, y_true, y_pred):
-        def keras_split(y_true, y_pred):
-            """
-                Everything is a hack around the y_true,y_pred paradigm.
-            """
-            y, u = _keras_unstack_hack(y_true)
-            a, b = _keras_unstack_hack(y_pred)
 
-            return y, u, a, b
-
-        def loglik_discrete(y, u, a, b, epsilon=1e-35):
-            hazard0 = K.pow((y + epsilon) / a, b)
-            hazard1 = K.pow((y + 1.0) / a, b)
-
-            loglikelihoods = u * \
-                K.log(K.exp(hazard1 - hazard0) - 1.0) - hazard1
-            return loglikelihoods
-
-        def loglik_continuous(y, u, a, b, epsilon=1e-35):
-            ya = (y + epsilon) / a
-            loglikelihoods = u * (K.log(b) + b * K.log(ya)) - K.pow(ya, b)
-            return loglikelihoods
-
-        def loglik_continuous_conditional_correction(y, u, a, b, epsilon=1e-35):
-            """Integrated conditional excess loss.
-                Explanation TODO
-            """
-            ya = (y + epsilon) / a
-            loglikelihoods = y * \
-                (u * (K.log(b) + b * K.log(ya)) - (b / (b + 1.)) * K.pow(ya, b))
-            return loglikelihoods
-
-        def penalty_term(b, location, growth):
-            scale = growth / location
-            penalty = K.exp(scale * (b - location))
-            return penalty
-
-        def accumulate_loss(loglikelihoods):
-            loss = -1.0 * K.mean(loglikelihoods, axis=-1)
-            return loss
-
-        y, u, a, b = keras_split(y_true, y_pred)
-
+        y, u, a, b = _keras_split(y_true, y_pred)
         if self.kind == 'discrete':
             loglikelihoods = loglik_discrete(y, u, a, b)
         elif self.kind == 'continuous':
             loglikelihoods = loglik_continuous(y, u, a, b)
 
-        if self.regularize:
-            loglikelihoods = loglikelihoods + \
-                penalty_term(b, self.location, self.growth)
-
+        loglikelihoods = K.clip(loglikelihoods, log(
+            self.clip_prob), log(1 - self.clip_prob))
         if self.reduce_loss:
-            loss = accumulate_loss(loglikelihoods)
+            loss = -1.0 * K.mean(loglikelihoods, axis=-1)
         else:
             loss = -loglikelihoods
 
         return loss
+
+# For backwards-compatibility
+loss = Loss
 
 
 class WeightWatcher(Callback):
