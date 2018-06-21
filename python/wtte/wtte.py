@@ -242,8 +242,8 @@ class Loss(object):
         elif self.kind == 'continuous':
             loglikelihoods = loglik_continuous(y, u, a, b)
 
-        loglikelihoods = K.clip(loglikelihoods, log(
-            self.clip_prob), log(1 - self.clip_prob))
+        if self.clip_prob is not None:
+            loglikelihoods = K.clip(loglikelihoods, log(self.clip_prob), log(1 - self.clip_prob))
         if self.reduce_loss:
             loss = -1.0 * K.mean(loglikelihoods, axis=-1)
         else:
