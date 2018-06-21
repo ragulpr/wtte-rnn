@@ -28,7 +28,7 @@ def _keras_unstack_hack(ab):
     return a, b
 
 
-def output_lambda(x, init_alpha=1.0, max_beta_value=5.0,
+def output_lambda(x, init_alpha=1.0, max_beta_value=5.0,scalefactor = None,
                   alpha_kernel_scalefactor=None):
     """Elementwise (Lambda) computation of alpha and regularized beta.
 
@@ -84,24 +84,28 @@ def output_lambda(x, init_alpha=1.0, max_beta_value=5.0,
             Call `keras.backend.set_epsilon(1e-08)` to lower epsilon \
             "
             warnings.warn(message)
+    if alpha_kernel_scalefactor is not None:
+            message = "`alpha_kernel_scalefactor` deprecated in favor of `scalefactor` scaling both.\n Setting `scalefactor = alpha_kernel_scalefactor`"
+            warnings.warn(message)
+            scalefactor = alpha_kernel_scalefactor
 
     a, b = _keras_unstack_hack(x)
 
-    # Implicitly initialize alpha:
-    if alpha_kernel_scalefactor is None:
-        a = init_alpha * K.exp(a)
-    else:
-        a = init_alpha * K.exp(alpha_kernel_scalefactor * a)
+    if scalefactor is not None:
+        # Done after due to theano bug.
+        a,b = scalefactor*a,scalefactor*b
 
-    m = max_beta_value
-    if m > 1.05:  # some value >>1.0
+    # Implicitly initialize alpha:
+    a = init_alpha * K.exp(a)
+    
+    if max_beta_value > 1.05:  # some value >>1.0
         # shift to start around 1.0
         # assuming input is around 0.0
-        _shift = np.log(m - 1.0)
+        _shift = np.log(max_beta_value - 1.0)
 
-        b = m*K.sigmoid(b - _shift)
-    else:
-        b = m*K.sigmoid(b)
+        b = b - _shift
+
+    b = max_beta_value*K.sigmoid(b)
 
     x = K.stack([a, b], axis=-1)
 
