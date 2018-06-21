@@ -205,7 +205,7 @@ class Loss(object):
 
         :param kind:  One of 'discrete' or 'continuous'
         :param reduce_loss: 
-        :param eps_prob: Clip likelihood to [log(eps_prob),log(1-eps_prob)]
+        :param clip_prob: Clip likelihood to [log(clip_prob),log(1-clip_prob)]
         :param regularize: Deprecated.
         :param location: Deprecated.
         :param growth: Deprecated.
@@ -215,14 +215,14 @@ class Loss(object):
     def __init__(self,
                  kind,
                  reduce_loss=True,
-                 eps_prob=1e-6,
+                 clip_prob=1e-6,
                  regularize=False,
                  location=None,
                  growth=None):
 
         self.kind = kind
         self.reduce_loss = reduce_loss
-        self.eps_prob = eps_prob
+        self.clip_prob = clip_prob
 
         if regularize == True or location is not None or growth is not None:
             raise DeprecationWarning('Directly penalizing beta has been found \
@@ -239,7 +239,7 @@ class Loss(object):
             loglikelihoods = loglik_continuous(y, u, a, b)
 
         loglikelihoods = K.clip(loglikelihoods, log(
-            self.eps_prob), log(1 - self.eps_prob))
+            self.clip_prob), log(1 - self.clip_prob))
         if self.reduce_loss:
             loss = -1.0 * K.mean(loglikelihoods, axis=-1)
         else:
