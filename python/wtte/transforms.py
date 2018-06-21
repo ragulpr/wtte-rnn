@@ -502,17 +502,9 @@ def normalize_padded(padded, means=None, stds=None,only_nonzero = False,epsilon 
         If only_nonzero, only normalizes nonzero entries. This should be the choice
         for sparse event data but not default for legacy reasons.
 
-        :param Boolean only_nonzero: 
-
-           * consider importing instead ex:
-
-                from sklearn.preprocessing import StandardScaler, RobustScaler
-                robust_scaler = RobustScaler()
-                x_train = robust_scaler.fit_transform(x_train)
-                x_test  = robust_scaler.transform(x_test)
-                ValueError: Found array with dim 3. RobustScaler expected <= 2.
-
-           * 
+        :param Array means: location coefficients
+        :param Array stds: scale coefficients
+        :param Boolean only_nonzero: Whether to normalize non-zero elements only.
     """
 
     is_flat = len(padded.shape) == 2
