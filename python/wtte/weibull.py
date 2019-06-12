@@ -168,11 +168,11 @@ class conditional_excess():
 
     def pdf(t, s, a, b):
         t = np.double(t)
-        return hazard(t + s, a, b) * np.exp(-cumulative_hazard(t + s) + cumulative_hazard(t))
+        return hazard(t + s, a, b) * np.exp(-cumulative_hazard(t + s, a, b) + cumulative_hazard(t, a, b))
 
     def cdf(t, s, a, b):
         t = np.double(t)
-        return 1 - np.exp(-cumulative_hazard(t + s) + cumulative_hazard(t))
+        return 1 - np.exp(-cumulative_hazard(t + s, a, b) + cumulative_hazard(t, a, b))
 
     def quantile(t, a, b, p):
         # TODO this is not tested yet.
